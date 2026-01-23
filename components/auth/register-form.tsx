@@ -1,0 +1,244 @@
+"use client";
+import { RegisterSchema } from "@/schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import React from "react";
+import { Controller, useForm } from "react-hook-form";
+import z from "zod";
+import { CardWrapper } from "@/components/auth/card-wrapper";
+import { registerUser } from "@/actions/auth";
+import {
+  Field,
+  FieldContent,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { FormError } from "./form-error";
+import { FormSuccess } from "./form-success";
+import { Button } from "../ui/button";
+import { vietnamUniversities } from "@/data/data";
+import { useRouter } from "next/navigation";
+
+function RegisterForm() {
+  const [isPending, startTransition] = React.useTransition();
+  const [error, setError] = React.useState<string | undefined>("");
+  const [success, setSuccess] = React.useState<string | undefined>("");
+  const router = useRouter();
+  const form = useForm<z.infer<typeof RegisterSchema>>({
+    resolver: zodResolver(RegisterSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+      name: "",
+      university_name: "",
+      phone: "",
+    },
+  });
+  const onSubmit = (values: z.infer<typeof RegisterSchema>) => {
+    setError("");
+    setSuccess("");
+    startTransition(() => {
+      registerUser(values).then((res) => {
+        if (res?.error) {
+          setError(res?.error);
+        }
+        if (res?.success) {
+          setSuccess(res?.success);
+          router.push("/login");
+        }
+      });
+    });
+  };
+  return (
+    <CardWrapper
+      headerLabel="Welcome to Swishswap"
+      backButtonHref="/auth/login"
+      backButtonLabel="Already have an account?"
+    >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="space-y-4">
+          <FieldGroup>
+            <Controller
+              control={form.control}
+              name="name"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="name">Họ và tên</FieldLabel>
+                  <Input
+                    {...field}
+                    disabled={isPending}
+                    placeholder="Nguyen Bao Huy"
+                    type="text"
+                    id="name"
+                    aria-invalid={fieldState.invalid ? "true" : "false"}
+                    autoComplete="off"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </FieldGroup>
+          <FieldGroup>
+            <Controller
+              control={form.control}
+              name="email"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="email">Email</FieldLabel>
+                  <Input
+                    {...field}
+                    disabled={isPending}
+                    placeholder="huynguyen002311@gmail.com"
+                    type="email"
+                    id="email"
+                    aria-invalid={fieldState.invalid ? "true" : "false"}
+                    autoComplete="off"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </FieldGroup>
+          <FieldGroup>
+            <Controller
+              control={form.control}
+              name="password"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
+                  <PasswordInput
+                    {...field}
+                    disabled={isPending}
+                    placeholder="********"
+                    id="password"
+                    aria-invalid={fieldState.invalid ? "true" : "false"}
+                    autoComplete="off"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </FieldGroup>
+          <FieldGroup>
+            <Controller
+              control={form.control}
+              name="confirmPassword"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="confirmPassword">
+                    Xác nhận mật khẩu
+                  </FieldLabel>
+                  <PasswordInput
+                    {...field}
+                    disabled={isPending}
+                    placeholder="********"
+                    id="confirmPassword"
+                    aria-invalid={fieldState.invalid ? "true" : "false"}
+                    autoComplete="off"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </FieldGroup>
+          <FieldGroup>
+            <Controller
+              control={form.control}
+              name="university_name"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldContent>
+                    <FieldLabel htmlFor="university_name">
+                      Trường Đại học
+                    </FieldLabel>
+                    <Select
+                      name={field.name}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger
+                        id="university_name"
+                        aria-invalid={fieldState.invalid}
+                        className="w-full"
+                      >
+                        <SelectValue placeholder="Please select your university" />
+                      </SelectTrigger>
+                      <SelectContent position="item-aligned">
+                        <SelectItem value="auto">Auto</SelectItem>
+                        <SelectSeparator />
+                        {vietnamUniversities.map((university) => (
+                          <SelectItem
+                            key={university.value}
+                            value={university.value}
+                          >
+                            {university.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </FieldContent>
+                </Field>
+              )}
+            />
+          </FieldGroup>
+          <FieldGroup>
+            <Controller
+              control={form.control}
+              name="phone"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="phone">Số điện thoại</FieldLabel>
+                  <Input
+                    {...field}
+                    disabled={isPending}
+                    placeholder="0375686583"
+                    type="text"
+                    id="phone"
+                    aria-invalid={fieldState.invalid ? "true" : "false"}
+                    autoComplete="off"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </FieldGroup>
+        </div>
+        <FormError message={error} />
+        <FormSuccess message={success} />
+        <Button
+          type="submit"
+          className="w-full bg-gradient text-white"
+          disabled={isPending}
+        >
+          Đăng kí
+        </Button>
+      </form>
+    </CardWrapper>
+  );
+}
+
+export default RegisterForm;
