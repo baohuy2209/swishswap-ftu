@@ -177,12 +177,10 @@ const Footer = () => {
         </div>
       </div>
       <div className="text-center text-gray-500 dark:text-gray-400 text-sm pt-10 mt-10 border-t border-gray-200 dark:border-gray-700">
-        <p>
-          &copy; {new Date().getFullYear()} Your Brand. All rights reserved.
-        </p>
+        <p>&copy; {new Date().getFullYear()} SwishSwap. All rights reserved.</p>
         <p className="mt-1">
-          Designed with <span className="text-red-500">&hearts;</span> by Your
-          Company
+          Designed with <span className="text-red-500">&hearts;</span> by Nguyen
+          Bao Huy
         </p>
       </div>
     </footer>
