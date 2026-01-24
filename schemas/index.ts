@@ -1,33 +1,80 @@
 import * as z from "zod";
 export const LoginSchema = z.object({
   email: z.string().email({
-    message: "Please enter a valid email address",
+    message: "Hãy nhập địa chỉ email",
   }),
   password: z.string().min(1, {
-    message: "Password is required",
+    message: "Hãy nhập password",
   }),
 });
 export const RegisterSchema = z
   .object({
-    email: z.string().email({
-      message: "Please enter a valid email address",
+    email: z.email({
+      message: "Hãy nhập email",
     }),
     password: z.string().min(6, {
-      message: "Password must be at least 6 characters long",
+      message: "Password có ít nhất 6 kí tự",
     }),
     confirmPassword: z.string().min(1, {
-      message: "Please confirm your password",
+      message: "Hãy xác nhận mật khẩu",
     }),
     name: z.string().min(1, {
-      message: "Name is required",
+      message: "Hãy nhập họ và tên",
     }),
     university_name: z.string().min(1, {
-      message: "University name is required",
+      message: "Hãy chọn trường đại học",
     }),
     phone: z.string().min(10, {
-      message: "Please enter a valid phone number",
+      message: "Hãy nhập số điện thoại",
     }),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
+    message: "Xác nhận password không thành công",
   });
+export const evindenceFileSchema = z
+  .instanceof(File)
+  .refine((file) => file.size > 0, {
+    message: "Vui lòng chọn ảnh",
+  })
+  .refine((file) => file.size <= 10 * 1024 * 1024, {
+    message: "Kích thước ảnh không được vượt quá 10MB",
+  })
+  .refine(
+    (file) => ["image/jpeg", "image/png", "image/jpg"].includes(file.type),
+    {
+      message: "Chỉ chấp nhận định dạng ảnh JPEG, PNG hoặc JPG",
+    },
+  );
+export const evindenceFormSchema = z.object({
+  evindenceFile: evindenceFileSchema,
+});
+
+export const createListingSchema = z.object({
+  title: z.string({
+    message: "Hãy nhập tên sản phẩm và chú thích liên quan",
+  }),
+  description: z
+    .string({
+      message: "Hãy nhập mô tả sản phẩm",
+    })
+    .min(20, {
+      message: "Hãy nhập ít nhất 20 kí tự mô tả sản phẩm để đăng bán",
+    }),
+  condition: z.string({
+    message: "Hãy lựa chọn tình trạng sản phẩm",
+  }),
+  price: z.coerce.number({
+    message: "Hãy nhập giá sản phẩm",
+  }),
+  location: z.string({
+    message: "Hãy nhập địa chỉ có thể trao đổi hàng",
+  }),
+  swap_enable: z.boolean(),
+  category: z.string({
+    message: "Hãy chọn loại sản phẩm",
+  }),
+  image_360: z
+    .array(evindenceFileSchema)
+    .min(3, "Phải tải lên ít nhất 3 ảnh")
+    .max(10, "Chỉ được tải tối đa 10 ảnh"),
+});

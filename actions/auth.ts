@@ -1,5 +1,5 @@
 "use server";
-import { LoginSchema, RegisterSchema } from "@/schemas";
+import { evindenceFormSchema, LoginSchema, RegisterSchema } from "@/schemas";
 import z from "zod";
 import {
   encodeBase32LowerCaseNoPadding,
@@ -10,6 +10,8 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 import prisma from "@/lib/db/prisma";
 import { User, Session } from "@/lib/generated/prisma/client";
+import { createClient } from "@/lib/supabase/server";
+import { getUniveryIdByValue } from "@/actions/university";
 export async function generateSessionToken(): Promise<string> {
   const bytes = new Uint8Array(20);
   crypto.getRandomValues(bytes);
@@ -159,11 +161,18 @@ export const registerUser = async (values: z.infer<typeof RegisterSchema>) => {
   if (existingUser) {
     return {
       user: null,
-      error: "User with this email already exists",
+      error: "Email đã tồn tại",
     };
   }
   const passwordHash = await hashPassword(password);
   try {
+    const universityId = await getUniveryIdByValue(university_name);
+    if (!universityId) {
+      return {
+        user: null,
+        error: "Không tìm thấy trường đại học tương ứng",
+      };
+    }
     const user = await prisma.user.create({
       data: {
         email,
@@ -171,12 +180,17 @@ export const registerUser = async (values: z.infer<typeof RegisterSchema>) => {
         name,
         university_name,
         phone,
+        university_id: universityId.universityId?.id,
       },
     });
+
     const safeUser = {
       ...user,
       password_hash: undefined,
     };
+    const token = await generateSessionToken();
+    const session = await createSession(token, user.id);
+    await setSessionTokenCookie(token, session.expiresAt);
     return {
       user: safeUser,
       success: "User registered successfully",
@@ -196,4 +210,45 @@ export const logoutUser = async () => {
     await invalidateSession(session.session.id);
   }
   await deleteSessionTokenCookie();
+};
+export const uploadEvindence = async (
+  values: z.infer<typeof evindenceFormSchema>,
+) => {
+  try {
+    const file = evindenceFormSchema.parse(values).evindenceFile;
+    console.log(file);
+    const fileExt = file.name.split(".").pop();
+    const filePath = `evindences/${crypto.randomUUID()}.${fileExt}`;
+    const supabase = await createClient();
+    const { data, error } = await supabase.storage
+      .from("proof-student")
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type,
+      });
+    if (error) {
+      return { error: "Xảy ra lỗi khi tải ảnh lên Supabase: " + error.message };
+    }
+    const { data: publicUrl } = supabase.storage
+      .from("proof-student")
+      .getPublicUrl(data.path);
+    console.log(publicUrl);
+    const session = await getCurrentSession();
+    if (!session.user) {
+      return { error: "Người dùng không hợp lệ" };
+    }
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { evidence_url: publicUrl.publicUrl },
+    });
+    return {
+      success: "Tải ảnh lên thành công",
+    };
+  } catch (e) {
+    return {
+      error:
+        "Tải ảnh lên thất bại" + (e instanceof Error ? `: ${e.message}` : ""),
+    };
+  }
 };

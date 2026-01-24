@@ -1,9 +1,9 @@
 "use client";
 import React from "react";
-import { CardWrapper } from "./card-wrapper";
-import { Button } from "../ui/button";
-import { FormError } from "./form-error";
-import { FormSuccess } from "./form-success";
+import { CardWrapper } from "@/components/auth/card-wrapper";
+import { Button } from "@/components/ui/button";
+import { FormError } from "@/components/auth/form-error";
+import { FormSuccess } from "@/components/auth/form-success";
 import Link from "next/link";
 import { LoginSchema } from "@/schemas";
 import { Controller, useForm } from "react-hook-form";
@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { login } from "@/actions/auth";
-import { PasswordInput } from "../ui/password-input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { useRouter } from "next/navigation";
 
 function LoginForm() {
@@ -42,6 +42,9 @@ function LoginForm() {
         }
         if (res?.success) {
           setSuccess(res?.success);
+          if (!res.user?.evidence_url) {
+            router.push("/auth/evindence");
+          }
           router.push("/");
         }
       });
@@ -49,10 +52,9 @@ function LoginForm() {
   };
   return (
     <CardWrapper
-      headerLabel="Welcome back"
+      headerLabel="Chào mừng quay trở lại"
       backButtonHref="/auth/register"
-      backButtonLabel="Don't have an account?"
-      showSocial={true}
+      backButtonLabel="Bạn chưa có account?"
     >
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-4">

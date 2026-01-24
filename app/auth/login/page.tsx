@@ -11,13 +11,13 @@ const LoginPage = () => {
         <div>
           <h1 className="text-white font-bold text-5xl font-sans">SwishSwap</h1>
           <p className="text-white mt-1 text-lg">
-            The marketplace for students
+            Chợ trao đổi hàng hóa dành cho sinh viên
           </p>
           <Link
             href="/"
             className="block w-28 text-green-800 bg-white text-center mt-4 py-2 rounded-2xl font-bold mb-2"
           >
-            Explore
+            Khám phá
           </Link>
         </div>
         <div className="absolute -bottom-32 -left-40 w-80 h-80 border-4 rounded-full border-opacity-30 border-t-8 text-white"></div>

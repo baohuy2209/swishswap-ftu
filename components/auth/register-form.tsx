@@ -22,18 +22,20 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
-import { FormError } from "./form-error";
-import { FormSuccess } from "./form-success";
-import { Button } from "../ui/button";
-import { vietnamUniversities } from "@/data/data";
+} from "@/components//ui/select";
+import { FormError } from "@/components/auth/form-error";
+import { FormSuccess } from "@/components/auth/form-success";
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { getAllUniversity } from "@/actions/university";
+import { University } from "@/lib/generated/prisma/client";
 
 function RegisterForm() {
   const [isPending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | undefined>("");
   const [success, setSuccess] = React.useState<string | undefined>("");
   const router = useRouter();
+  const [listUniversity, setListUniversity] = React.useState<University[]>([]);
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
@@ -55,11 +57,25 @@ function RegisterForm() {
         }
         if (res?.success) {
           setSuccess(res?.success);
-          router.push("/login");
+          router.push("/auth/evindence");
         }
       });
     });
   };
+  React.useEffect(() => {
+    getAllUniversity()
+      .then((res) => {
+        if (res.error) {
+          setError(res.error);
+        }
+        if (!res.universities) {
+          setError("Lỗi khi load dữ liệu các Trường ĐH");
+        } else {
+          setListUniversity(res.universities);
+        }
+      })
+      .catch();
+  }, []);
   return (
     <CardWrapper
       headerLabel="Welcome to Swishswap"
@@ -180,12 +196,12 @@ function RegisterForm() {
                         aria-invalid={fieldState.invalid}
                         className="w-full"
                       >
-                        <SelectValue placeholder="Please select your university" />
+                        <SelectValue placeholder="Chọn trường đại học" />
                       </SelectTrigger>
                       <SelectContent position="item-aligned">
                         <SelectItem value="auto">Auto</SelectItem>
                         <SelectSeparator />
-                        {vietnamUniversities.map((university) => (
+                        {listUniversity.map((university) => (
                           <SelectItem
                             key={university.value}
                             value={university.value}

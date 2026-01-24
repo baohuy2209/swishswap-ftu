@@ -27,17 +27,17 @@ model User {
   email_verified   Boolean   @default(false)
   password_hash    String
   phone            String?
+  location         String?
   university_id    String?
-  zone_id          String?
+  avatar_url       String?
+  evidence_url     String?
   rating_count     Int       @default(0)
   review_count     Int       @default(0)
   created_at       DateTime  @default(now())
   updated_at       DateTime  @updatedAt
-  zoneId           String?
   university_name  String?
   listings         Listing[]
   orders           Order[]
-  zone             Zone?     @relation(fields: [zoneId], references: [id])
   authored_reviews Review[]  @relation("AuthorId")
   received_reviews Review[]  @relation("ReceiverId")
   offers_sender    Offer[]   @relation("OfferSender")
@@ -52,36 +52,23 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Zone {
-  id              String   @id @default(cuid())
-  name            String   @unique // e.g., "HCMC", "Hanoi"
-  slug            String   @unique
-  university_name String
-  is_active       Boolean  @default(true)
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
-
-  users User[]
-
-  @@map("zones")
-}
-
 model University {
   id         String   @id @default(cuid())
-  name       String
+  label      String   @unique
+  value      String   @unique
+  zone       String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
+  @@index([value])
   @@map("universities")
 }
 
 model Category {
   id         String   @id @default(cuid())
-  name       String
+  name       String   @unique
   slug       String   @unique
-  icon       String?
-  sort_order Int      @default(0)
-  is_active  Boolean  @default(true)
+  group      String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -123,8 +110,7 @@ model Listing {
   location String
 
   // Swap
-  swap_enabled Boolean @default(false)
-  swap_only    Boolean @default(false)
+  swap_enabled Boolean @default(true)
 
   // Metrics
   view_count     Int @default(0)
@@ -138,12 +124,13 @@ model Listing {
   completed_at DateTime?
 
   // Relations
-  seller     User             @relation(fields: [seller_id], references: [id])
-  category   Category         @relation(fields: [category_id], references: [id])
+  seller        User             @relation(fields: [seller_id], references: [id])
+  category      Category         @relation(fields: [category_id], references: [id])
   // media      ListingMedia[]
-  swap_prefs SwapPreference[]
-  offers     Offer[]
-  orders     Order[]
+  swap_prefs    SwapPreference[]
+  offers        Offer[]
+  orders        Order[]
+  listingMedias ListingMedia[]
 
   @@index([seller_id])
   @@index([university_id])
@@ -154,32 +141,23 @@ model Listing {
   @@map("listings")
 }
 
-// enum MediaType {
-//   video
-//   image_360
-// }
+model ListingMedia {
+  id         String   @id @default(cuid())
+  listing_id String
+  images_url String
+  created_at DateTime @default(now())
 
-// model ListingMedia {
-//   id         String    @id @default(cuid())
-//   listing_id String
-//   media_type MediaType
-//   file_url   String
-//   file_size  Int // bytes
-//   mime_type  String
-//   sort_order Int       @default(0)
-//   created_at DateTime  @default(now())
+  listing Listing @relation(fields: [listing_id], references: [id], onDelete: Cascade)
 
-//   listing Listing @relation(fields: [listing_id], references: [id], onDelete: Cascade)
-
-//   @@index([listing_id])
-//   @@map("listing_media")
-// }
+  @@index([listing_id])
+  @@map("listing_media")
+}
 
 model SwapPreference {
   id          String   @id @default(cuid())
   listing_id  String
   category_id String?
-  keyword     String?
+  Note        String?
   created_at  DateTime @default(now())
 
   listing  Listing   @relation(fields: [listing_id], references: [id], onDelete: Cascade)

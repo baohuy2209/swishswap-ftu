@@ -1,15 +1,17 @@
-import RegisterForm from "@/components/auth/register-form";
+import EvidenceForm from "@/components/auth/evindence-form";
 import Link from "next/link";
-import React from "react";
 
-function RegisterPage() {
+function EvindencePage() {
   return (
     <div className="w-full flex min-h-screen bg-zinc-50  dark:bg-transparent">
+      <div className="flex md:w-1/2 justify-center py-10 items-center bg-white">
+        <EvidenceForm />
+      </div>
       <div className="relative h-screen overflow-hidden md:flex w-1/2 bg-gradient justify-around items-center hidden">
         <div>
           <h1 className="text-white font-bold text-5xl font-sans">SwishSwap</h1>
           <p className="text-white mt-1 text-lg">
-            Chợ trao đổi hàng hóa cho sinh viên
+            Chợ trao đổi hàng hóa dành cho sinh viên
           </p>
           <Link
             href="/"
@@ -23,11 +25,8 @@ function RegisterPage() {
         <div className="absolute -top-40 right-0 w-80 h-80 border-4 rounded-full border-opacity-30 border-t-8 text-white"></div>
         <div className="absolute -top-20 -right-20 w-80 h-80 border-4 rounded-full border-opacity-30 border-t-8 text-white"></div>
       </div>
-      <div className="flex md:w-1/2 justify-center py-10 items-center bg-white">
-        <RegisterForm />
-      </div>
     </div>
   );
 }
 
-export default RegisterPage;
+export default EvindencePage;
