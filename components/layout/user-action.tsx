@@ -1,3 +1,4 @@
+"use client";
 import { User } from "@/lib/generated/prisma/client";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { logoutUser } from "@/actions/auth";
 import { Bell } from "lucide-react";
+import { useRouter } from "next/navigation";
 const UserAction = ({ user }: { user: Omit<User, "password_hash"> | null }) => {
   if (!user) {
     return null;
@@ -26,7 +28,7 @@ const UserAction = ({ user }: { user: Omit<User, "password_hash"> | null }) => {
             <AvatarFallback>{user.name}</AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-40">
+        <DropdownMenuContent className="w-56">
           <DropdownMenuGroup>
             <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
             <DropdownMenuItem>
@@ -44,7 +46,13 @@ const UserAction = ({ user }: { user: Omit<User, "password_hash"> | null }) => {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem>
-            <span onClick={() => logoutUser()}>Đăng xuất</span>
+            <span
+              onClick={() => {
+                logoutUser();
+              }}
+            >
+              Đăng xuất
+            </span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -52,7 +60,7 @@ const UserAction = ({ user }: { user: Omit<User, "password_hash"> | null }) => {
         <DropdownMenuTrigger asChild>
           <Bell />
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-40">
+        <DropdownMenuContent className="w-56">
           <DropdownMenuLabel>Thông báo</DropdownMenuLabel>
         </DropdownMenuContent>
       </DropdownMenu>

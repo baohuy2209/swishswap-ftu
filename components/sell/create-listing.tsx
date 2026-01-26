@@ -29,6 +29,7 @@ import { FormError } from "@/components/auth/form-error";
 import { FormSuccess } from "@/components/auth/form-success";
 import { Button } from "../ui/button";
 import { postProduct } from "@/actions/listings";
+import { toast } from "sonner";
 export const LISTING_CONDITION_OPTIONS = [
   { value: "new", label: "Mới 100%" },
   { value: "like_new", label: "Như mới" },
@@ -48,18 +49,40 @@ function CreateListings() {
     defaultValues: {
       title: "",
       description: "",
-      condition: "",
-      price: 0,
+      condition: "new",
+      price: undefined,
       location: "",
       swap_enable: true,
       category: "",
+      image_360: [],
     },
   });
   const onSubmit = (values: z.infer<typeof createListingSchema>) => {
     setError("");
     setSuccess("");
     startTransition(() => {
-      postProduct(values).then().catch();
+      postProduct(values)
+        .then((res) => {
+          if (res.error) {
+            setError(res.error);
+          }
+          if (res.success) {
+            setSuccess(res.success);
+            const formatted = new Intl.DateTimeFormat("vi-VN", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            }).format(new Date());
+            toast("Đã tạo sản phẩm thành công", {
+              description: `${formatted}`,
+            });
+            form.reset();
+          }
+        })
+        .catch();
     });
   };
   React.useEffect(() => {
@@ -126,7 +149,10 @@ function CreateListings() {
                         >
                           <SelectValue placeholder="Please select your university" />
                         </SelectTrigger>
-                        <SelectContent position="item-aligned">
+                        <SelectContent
+                          position="item-aligned"
+                          className="min-w-40"
+                        >
                           {Object.entries(categories || {}).length > 0 ? (
                             Object.entries(categories || {}).map(
                               ([group, items]) => (
@@ -200,6 +226,7 @@ function CreateListings() {
                       id="price"
                       aria-invalid={fieldState.invalid ? "true" : "false"}
                       autoComplete="off"
+                      onChange={(e) => field.onChange(e.target.valueAsNumber)}
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />

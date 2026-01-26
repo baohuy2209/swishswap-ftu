@@ -66,7 +66,7 @@ const Header = ({ user }: { user: Omit<User, "password_hash"> | null }) => {
               {user ? (
                 <UserAction user={user} />
               ) : (
-                <>
+                <div className="flex gap-2">
                   <Link
                     href="/auth/register"
                     className="px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-sm"
@@ -79,7 +79,7 @@ const Header = ({ user }: { user: Omit<User, "password_hash"> | null }) => {
                   >
                     Đăng nhập
                   </Link>
-                </>
+                </div>
               )}
             </div>
 

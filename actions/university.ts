@@ -36,3 +36,22 @@ export const getUniveryIdByValue = async (value: string) => {
     };
   }
 };
+export const getUniveryById = async (id: string) => {
+  try {
+    const university = await prisma.university.findUnique({
+      where: {
+        id: id,
+      },
+    });
+    return {
+      success: "Load thành công",
+      university,
+    };
+  } catch (e) {
+    console.log(e instanceof Error ? `${e.message}` : "");
+    return {
+      error: "Lỗi khi load dữ liệu từ database",
+      university: null,
+    };
+  }
+};

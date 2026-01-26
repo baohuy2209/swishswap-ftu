@@ -145,7 +145,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
   await setSessionTokenCookie(token, session.expiresAt);
   const safeUser = {
     ...user,
-    passwordHash: undefined,
+    password_hash: undefined,
   };
   return {
     user: safeUser,
@@ -167,7 +167,7 @@ export const registerUser = async (values: z.infer<typeof RegisterSchema>) => {
   const passwordHash = await hashPassword(password);
   try {
     const universityId = await getUniveryIdByValue(university_name);
-    if (!universityId) {
+    if (!universityId.universityId) {
       return {
         user: null,
         error: "Không tìm thấy trường đại học tương ứng",
@@ -180,7 +180,7 @@ export const registerUser = async (values: z.infer<typeof RegisterSchema>) => {
         name,
         university_name,
         phone,
-        university_id: universityId.universityId?.id,
+        university_id: universityId.universityId.id,
       },
     });
 
@@ -216,7 +216,6 @@ export const uploadEvindence = async (
 ) => {
   try {
     const file = evindenceFormSchema.parse(values).evindenceFile;
-    console.log(file);
     const fileExt = file.name.split(".").pop();
     const filePath = `evindences/${crypto.randomUUID()}.${fileExt}`;
     const supabase = await createClient();
@@ -233,7 +232,6 @@ export const uploadEvindence = async (
     const { data: publicUrl } = supabase.storage
       .from("proof-student")
       .getPublicUrl(data.path);
-    console.log(publicUrl);
     const session = await getCurrentSession();
     if (!session.user) {
       return { error: "Người dùng không hợp lệ" };

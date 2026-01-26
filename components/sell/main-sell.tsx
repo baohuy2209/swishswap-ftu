@@ -2,19 +2,25 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CreateListings from "./create-listing";
-import CurrentListing from "./current-listing";
+import CurrentListing, { ListingCatalog } from "./current-listing";
 import CurrentBuyOffer from "./current-buy-offer";
 import CurrentSwapOffer from "./current-swap-offer";
-
-const menuSidebar = [
-  { id: 1, title: "Đăng sản phẩm", content: <CreateListings /> },
-  { id: 2, title: "Các sản phẩm đang bán", content: <CurrentListing /> },
-  { id: 3, title: "Các yêu cầu mua hàng", content: <CurrentBuyOffer /> },
-  { id: 4, title: "Các yêu cầu trao đổi", content: <CurrentSwapOffer /> },
-];
-function MainSell() {
+export interface MainSellProps {
+  safeListings: ListingCatalog[];
+}
+function MainSell({ safeListings }: MainSellProps) {
   const [activeTab, setActiveTab] = React.useState(1);
   const [isLoading, setIsLoading] = React.useState(false);
+  const menuSidebar = [
+    { id: 1, title: "Đăng sản phẩm", content: <CreateListings /> },
+    {
+      id: 2,
+      title: "Các sản phẩm đang bán",
+      content: <CurrentListing safeListings={safeListings} />,
+    },
+    { id: 3, title: "Các yêu cầu mua hàng", content: <CurrentBuyOffer /> },
+    { id: 4, title: "Các yêu cầu trao đổi", content: <CurrentSwapOffer /> },
+  ];
   React.useEffect(() => {
     if (activeTab) {
       setIsLoading(true);

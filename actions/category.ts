@@ -84,3 +84,23 @@ export const getValueCategories = async () => {
     };
   }
 };
+
+export const getCategoryById = async (id: string) => {
+  try {
+    const category = await prisma.category.findUnique({
+      where: {
+        id: id,
+      },
+    });
+    return {
+      success: "Load thành công",
+      category,
+    };
+  } catch (e) {
+    console.log(e instanceof Error ? `${e.message}` : "");
+    return {
+      error: "Lỗi khi load thông tin các loại sản phẩm ",
+      category: null,
+    };
+  }
+};

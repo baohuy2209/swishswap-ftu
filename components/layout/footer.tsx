@@ -50,8 +50,8 @@ const Footer = () => {
             <h3 className="text-3xl font-extrabold ">SwishSwap</h3>
           </div>
           <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-            Innovating for a better tomorrow. We are committed to delivering
-            high-quality solutions that empower businesses and individuals.
+            Nơi sinh viên trao đổi, mua bán và chia sẻ đồ dùng một cách tiện
+            lợi, tiết kiệm và an toàn.
           </p>
           <div className="flex space-x-5 pt-2">
             <Link

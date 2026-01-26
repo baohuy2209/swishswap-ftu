@@ -60,12 +60,8 @@ export const createListingSchema = z.object({
     .min(20, {
       message: "Hãy nhập ít nhất 20 kí tự mô tả sản phẩm để đăng bán",
     }),
-  condition: z.string({
-    message: "Hãy lựa chọn tình trạng sản phẩm",
-  }),
-  price: z.coerce.number({
-    message: "Hãy nhập giá sản phẩm",
-  }),
+  condition: z.enum(["new", "like_new", "good", "fair"]),
+  price: z.number().min(1, "Hãy nhập giá sản phẩm"),
   location: z.string({
     message: "Hãy nhập địa chỉ có thể trao đổi hàng",
   }),

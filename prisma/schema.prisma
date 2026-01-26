@@ -26,9 +26,9 @@ model User {
   email            String    @unique
   email_verified   Boolean   @default(false)
   password_hash    String
-  phone            String?
+  phone            String
   location         String?
-  university_id    String?
+  university_id    String
   avatar_url       String?
   evidence_url     String?
   rating_count     Int       @default(0)
@@ -46,7 +46,7 @@ model User {
 }
 
 model Session {
-  id        String   @id
+  id        String   @id @unique
   userId    String
   expiresAt DateTime
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -142,10 +142,11 @@ model Listing {
 }
 
 model ListingMedia {
-  id         String   @id @default(cuid())
-  listing_id String
-  images_url String
-  created_at DateTime @default(now())
+  id            String   @id @default(cuid())
+  listing_id    String
+  images_url    String
+  is_main_image Boolean  @default(false)
+  created_at    DateTime @default(now())
 
   listing Listing @relation(fields: [listing_id], references: [id], onDelete: Cascade)
 
