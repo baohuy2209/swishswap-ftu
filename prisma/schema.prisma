@@ -153,13 +153,22 @@ model ListingMedia {
   @@map("listing_media")
 }
 
+enum SwapPreferenceStatus {
+  pending
+  accepted
+  declined
+}
+
 model SwapPreference {
-  id          String   @id @default(cuid())
+  id          String               @id @default(cuid())
   listing_id  String
   category_id String?
   sender_id   String
-  Note        String?
-  created_at  DateTime @default(now())
+  Note        String
+  contact     String
+  status      SwapPreferenceStatus @default(pending)
+  created_at  DateTime             @default(now())
+  updated_at  DateTime             @updatedAt
 
   listing  Listing   @relation(fields: [listing_id], references: [id], onDelete: Cascade)
   category Category? @relation(fields: [category_id], references: [id])
@@ -223,9 +232,6 @@ model Order {
   pickup_location     String?
   pickup_time         DateTime?
   pickup_confirmed_at DateTime?
-
-  // Deadlines
-  confirmation_deadline DateTime
 
   // Timestamps
   created_at   DateTime  @default(now())

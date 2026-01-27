@@ -1,14 +1,24 @@
 "use client";
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import CreateListings from "./create-listing";
-import CurrentListing, { ListingCatalog } from "./current-listing";
-import CurrentBuyOffer from "./current-buy-offer";
-import CurrentSwapOffer from "./current-swap-offer";
+import CreateListings from "@/components/sell/create-listing";
+import CurrentListing, {
+  ListingCatalog,
+} from "@/components/sell/current-listing";
+import {
+  OfferType,
+  CurrentBuyOffer,
+} from "@/components/sell/current-buy-offer";
+import {
+  CurrentSwapOffer,
+  SwapType,
+} from "@/components/sell/current-swap-offer";
 export interface MainSellProps {
   safeListings: ListingCatalog[];
+  listOffers: OfferType[];
+  safeListSwaps: SwapType[];
 }
-function MainSell({ safeListings }: MainSellProps) {
+function MainSell({ safeListings, listOffers, safeListSwaps }: MainSellProps) {
   const [activeTab, setActiveTab] = React.useState(1);
   const [isLoading, setIsLoading] = React.useState(false);
   const menuSidebar = [
@@ -18,8 +28,16 @@ function MainSell({ safeListings }: MainSellProps) {
       title: "Các sản phẩm đang bán",
       content: <CurrentListing safeListings={safeListings} />,
     },
-    { id: 3, title: "Các yêu cầu mua hàng", content: <CurrentBuyOffer /> },
-    { id: 4, title: "Các yêu cầu trao đổi", content: <CurrentSwapOffer /> },
+    {
+      id: 3,
+      title: "Các yêu cầu mua hàng",
+      content: <CurrentBuyOffer listOffers={listOffers} />,
+    },
+    {
+      id: 4,
+      title: "Các yêu cầu trao đổi",
+      content: <CurrentSwapOffer listSwaps={safeListSwaps} />,
+    },
   ];
   React.useEffect(() => {
     if (activeTab) {

@@ -6,6 +6,18 @@ import { ListingClient } from "@/components/sell/current-listing";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+export function generateOrderNumber(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let result = "";
+
+  for (let i = 0; i < 10; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+
+  return `ORD-${result}`;
+}
+
 export const serializeListing = (item: Listing): ListingClient => ({
   id: item.id,
   seller_id: item.seller_id,

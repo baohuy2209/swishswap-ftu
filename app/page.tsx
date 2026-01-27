@@ -36,7 +36,7 @@ export default async function Home() {
   return (
     <div className="w-full flex flex-col">
       <Header user={user} />
-      <main className="min-h-screen">
+      <main>
         <HomePage safeListings={safeListings} />
       </main>
       <Footer />

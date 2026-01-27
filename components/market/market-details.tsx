@@ -57,6 +57,7 @@ function MarketDetails({ listingInfo, listMedia }: MarketDetailProps) {
     resolver: zodResolver(postingSwapPrefrence),
     defaultValues: {
       note: "",
+      contact: "",
     },
   });
   const formOffer = useForm<z.infer<typeof postingOffer>>({
@@ -461,6 +462,37 @@ function MarketDetails({ listingInfo, listMedia }: MarketDetailProps) {
                                     disabled={isPending}
                                     autoComplete="off"
                                     className="min-h-40"
+                                    placeholder="Mô tả chi tiết trao đổi"
+                                  />
+                                  {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
+                                  )}
+                                </Field>
+                              )}
+                            />
+                          </FieldGroup>
+                          <FieldGroup>
+                            <Controller
+                              control={formSwap.control}
+                              name="contact"
+                              render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                  <FieldLabel
+                                    htmlFor="contact"
+                                    className="sr-only"
+                                  >
+                                    Thông tin liên lạc
+                                  </FieldLabel>
+                                  <Input
+                                    {...field}
+                                    id="contact"
+                                    type="text"
+                                    aria-invalid={
+                                      fieldState.invalid ? "true" : "false"
+                                    }
+                                    disabled={isPending}
+                                    autoComplete="off"
+                                    placeholder="Số liên lạc"
                                   />
                                   {fieldState.invalid && (
                                     <FieldError errors={[fieldState.error]} />
@@ -700,10 +732,6 @@ function MarketDetails({ listingInfo, listMedia }: MarketDetailProps) {
               <InfoItem
                 label="Yêu thích"
                 value={listingInfo.favorite_count.toString()}
-              />
-              <InfoItem
-                label="Đổi hàng"
-                value={listingInfo.swap_enabled ? "Có hỗ trợ" : "Không"}
               />
               <InfoItem
                 label="Ngày đăng"

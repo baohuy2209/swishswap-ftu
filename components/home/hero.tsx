@@ -49,21 +49,21 @@ export default function HeroSection() {
             <div className="flex items-center text-sm text-gray-500">
               <div className="flex -space-x-2 mr-3">
                 <Image
-                  src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79"
+                  src="/user/image1.png"
                   alt="Student"
                   width={32}
                   height={32}
                   className="rounded-full border-2 border-white object-cover"
                 />
                 <Image
-                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2"
+                  src="/user/image2.png"
                   alt="Student"
                   width={32}
                   height={32}
                   className="rounded-full border-2 border-white object-cover"
                 />
                 <Image
-                  src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d"
+                  src="/user/image3.png"
                   alt="Student"
                   width={32}
                   height={32}

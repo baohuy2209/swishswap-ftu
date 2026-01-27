@@ -1,12 +1,11 @@
 "use server";
-import z from "zod";
+import z, { array } from "zod";
 import prisma from "@/lib/db/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createListingSchema } from "@/schemas";
 import { getCurrentSession } from "@/actions/auth";
 import { getCategoryByName } from "@/actions/category";
 import { getUniveryById } from "@/actions/university";
-import { NextResponse } from "next/server";
 
 // Xử lí uplaod
 export const uploadImageProduct = async (file: File) => {
@@ -343,4 +342,31 @@ export async function get3TopsListing() {
     console.error(e);
     return { error: "Lỗi khi lấy dữ liệu" };
   }
+}
+
+export async function getArrayListingIdFromUser() {
+  const { userListings } = await getUserCurrentListings();
+  if (!userListings) {
+    return [];
+  }
+  const ArrayListingId = userListings.map((item) => item.id);
+  return ArrayListingId;
+}
+export async function getTitleByListingId(listing_id: string) {
+  const currentListing = await prisma.listing.findUnique({
+    where: {
+      id: listing_id,
+    },
+  });
+  return currentListing?.title;
+}
+export async function getListTitle(lists_id: string[]) {
+  const listTitle: string[] = [];
+  const length_array = lists_id.length;
+  for (let i = 0; i < length_array; i++) {
+    const title = await getTitleByListingId(lists_id[i]);
+    if (!title) continue;
+    listTitle.push(title);
+  }
+  return listTitle;
 }

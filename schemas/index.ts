@@ -78,6 +78,9 @@ export const postingSwapPrefrence = z.object({
   note: z.string().min(40, {
     message: "Bạn cần nhập chi tiết điều kiện trao đổi",
   }),
+  contact: z.string().min(1, {
+    message: "Bạn cần nhập thông tin liên lạc",
+  }),
 });
 export const postingOffer = z.object({
   price_offferd: z.number().min(1, "Hây nhập giá đề nghị của bạn"),
