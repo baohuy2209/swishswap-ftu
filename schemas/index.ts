@@ -74,3 +74,17 @@ export const createListingSchema = z.object({
     .min(3, "Phải tải lên ít nhất 3 ảnh")
     .max(10, "Chỉ được tải tối đa 10 ảnh"),
 });
+export const postingSwapPrefrence = z.object({
+  note: z.string().min(40, {
+    message: "Bạn cần nhập chi tiết điều kiện trao đổi",
+  }),
+});
+export const postingOffer = z.object({
+  price_offferd: z.number().min(1, "Hây nhập giá đề nghị của bạn"),
+  pickup_location: z.string().min(1, "Hãy nhập chi tiết địa điểm để nhận hàng"),
+  pickup_time: z.date({
+    message: "Hãy chọn thời gian trao đổi cụ thể",
+  }),
+  note: z.string(),
+  contact: z.string(),
+});

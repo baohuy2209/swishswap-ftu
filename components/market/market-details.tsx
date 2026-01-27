@@ -10,15 +10,64 @@ import RelatedImage from "@/components/sell/components/related-image";
 import React from "react";
 import { getUniveryById } from "@/actions/university";
 import { getCategoryById } from "@/actions/category";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { createSwapPreference } from "@/actions/swap";
+import { Controller, useForm } from "react-hook-form";
+import z from "zod";
+import { postingOffer, postingSwapPrefrence } from "@/schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { createOffer } from "@/actions/offer";
+import { Input } from "../ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { ChevronDownIcon } from "lucide-react";
+import ViewCounter from "./components/view-count";
 export interface MarketDetailProps {
   listingInfo: ListingClient;
   listMedia: ListingMedia[];
 }
 function MarketDetails({ listingInfo, listMedia }: MarketDetailProps) {
+  const [date, setDate] = React.useState<Date>();
+  const [isPending, startTransition] = React.useTransition();
   const mainImage = listMedia.find((item) => item.is_main_image);
   const relatedImage = listMedia.filter((item) => !item.is_main_image);
   const [uni_name, setUni_name] = React.useState("");
   const [category, setCategory] = React.useState("");
+  const formSwap = useForm<z.infer<typeof postingSwapPrefrence>>({
+    resolver: zodResolver(postingSwapPrefrence),
+    defaultValues: {
+      note: "",
+    },
+  });
+  const formOffer = useForm<z.infer<typeof postingOffer>>({
+    resolver: zodResolver(postingOffer),
+    defaultValues: {
+      price_offferd: undefined,
+      pickup_location: "",
+      pickup_time: new Date(),
+      note: "",
+    },
+  });
   React.useEffect(() => {
     getUniveryById(listingInfo.university_id).then((res) => {
       const { university } = res;
@@ -39,8 +88,57 @@ function MarketDetails({ listingInfo, listMedia }: MarketDetailProps) {
       }
     });
   }, [listingInfo.category_id]);
+  const postOffer = (values: z.infer<typeof postingOffer>) => {
+    startTransition(() => {
+      createOffer(listingInfo, values).then((res) => {
+        const formatted = new Intl.DateTimeFormat("vi-VN", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }).format(new Date());
+        if (res.error) {
+          toast(res.error, {
+            description: `${formatted}`,
+          });
+        }
+        if (res.success) {
+          toast(res.success, {
+            description: `${formatted}`,
+          });
+        }
+      });
+    });
+  };
+  const postSwap = (values: z.infer<typeof postingSwapPrefrence>) => {
+    startTransition(() => {
+      createSwapPreference(listingInfo, values).then((res) => {
+        const formatted = new Intl.DateTimeFormat("vi-VN", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }).format(new Date());
+        if (res.error) {
+          toast(res.error, {
+            description: `${formatted}`,
+          });
+        }
+        if (res.success) {
+          toast(res.success, {
+            description: `${formatted}`,
+          });
+        }
+      });
+    });
+  };
   return (
     <div className="bg-gray-50">
+      <ViewCounter listingId={listingInfo.id} />
       <div className="bg-white border-b border-gray-200">
         <div className="container mx-auto py-3 px-4">
           <div className="flex items-center gap-2 text-sm">
@@ -53,7 +151,7 @@ function MarketDetails({ listingInfo, listMedia }: MarketDetailProps) {
             </Link>
             <ChevronRight className="w-4 h-4 text-gray-400" />
             <Link
-              href="/sell"
+              href="/market"
               className="text-gray-600 hover:text-emerald-600 transition-colors flex items-center gap-1"
             >
               <Hospital className="w-4 h-4" />
@@ -115,20 +213,479 @@ function MarketDetails({ listingInfo, listMedia }: MarketDetailProps) {
             <div className="flex gap-4">
               {listingInfo.swap_enabled ? (
                 <>
-                  <Button
-                    variant="outline"
-                    className="flex-1 border-emerald-600 text-emerald-600 hover:bg-emerald-50"
-                  >
-                    Đề nghị mua
-                  </Button>
-                  <Button className="flex-1 bg-linear-to-r from-emerald-500 to-emerald-700 text-white shadow-lg">
-                    Đề nghị trao đổi
-                  </Button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="flex-1 border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+                      >
+                        Đề nghị mua
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Gửi đề nghị mua cho người bán</DialogTitle>
+                        <DialogDescription>
+                          Bạn cần đưa ra giá mặc cả, địa điểm giao dịch, thời
+                          gian cụ thể
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="flex items-center gap-2">
+                        <form
+                          onSubmit={formOffer.handleSubmit(postOffer)}
+                          className="grid flex-1 gap-2 space-y-6"
+                        >
+                          <div className="space-y-4">
+                            <FieldGroup>
+                              <Controller
+                                control={formOffer.control}
+                                name="price_offferd"
+                                render={({ field, fieldState }) => (
+                                  <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel
+                                      htmlFor="price_offferd"
+                                      className="sr-only"
+                                    >
+                                      Giá đề nghị
+                                    </FieldLabel>
+                                    <Input
+                                      {...field}
+                                      id="price_offferd"
+                                      aria-invalid={
+                                        fieldState.invalid ? "true" : "false"
+                                      }
+                                      type="number"
+                                      disabled={isPending}
+                                      autoComplete="off"
+                                      placeholder="Giá đề nghị"
+                                      onChange={(e) =>
+                                        field.onChange(e.target.valueAsNumber)
+                                      }
+                                    />
+                                    {fieldState.invalid && (
+                                      <FieldError errors={[fieldState.error]} />
+                                    )}
+                                  </Field>
+                                )}
+                              />
+                            </FieldGroup>
+                            <FieldGroup>
+                              <Controller
+                                control={formOffer.control}
+                                name="pickup_location"
+                                render={({ field, fieldState }) => (
+                                  <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel
+                                      htmlFor="pickup_location"
+                                      className="sr-only"
+                                    >
+                                      Địa điểm giao dịch
+                                    </FieldLabel>
+                                    <Input
+                                      {...field}
+                                      id="pickup_location"
+                                      placeholder="Địa điểm giao dịch"
+                                      aria-invalid={
+                                        fieldState.invalid ? "true" : "false"
+                                      }
+                                      type="text"
+                                      disabled={isPending}
+                                      autoComplete="off"
+                                    />
+                                    {fieldState.invalid && (
+                                      <FieldError errors={[fieldState.error]} />
+                                    )}
+                                  </Field>
+                                )}
+                              />
+                            </FieldGroup>
+                            <FieldGroup>
+                              <Controller
+                                control={formOffer.control}
+                                name="pickup_time"
+                                render={({ field, fieldState }) => (
+                                  <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel
+                                      htmlFor="pickup_time"
+                                      className="sr-only"
+                                    >
+                                      Thời gian
+                                    </FieldLabel>
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <Button
+                                          variant="outline"
+                                          data-empty={!date}
+                                          className="data-[empty=true]:text-muted-foreground w-53 justify-between text-left font-normal"
+                                        >
+                                          {date ? (
+                                            format(date, "PPP")
+                                          ) : (
+                                            <span>Chọn thời gian</span>
+                                          )}
+                                          <ChevronDownIcon />
+                                        </Button>
+                                      </PopoverTrigger>
+                                      <PopoverContent
+                                        className="w-auto p-0"
+                                        align="start"
+                                      >
+                                        <Calendar
+                                          {...field}
+                                          id="pickup_time"
+                                          mode="single"
+                                          selected={date}
+                                          onSelect={setDate}
+                                          defaultMonth={date}
+                                        />
+                                      </PopoverContent>
+                                    </Popover>
+                                    {fieldState.invalid && (
+                                      <FieldError errors={[fieldState.error]} />
+                                    )}
+                                  </Field>
+                                )}
+                              />
+                            </FieldGroup>
+                            <FieldGroup>
+                              <Controller
+                                control={formOffer.control}
+                                name="note"
+                                render={({ field, fieldState }) => (
+                                  <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel
+                                      htmlFor="note"
+                                      className="sr-only"
+                                    >
+                                      Ghi chú
+                                    </FieldLabel>
+                                    <Textarea
+                                      {...field}
+                                      id="note"
+                                      aria-invalid={
+                                        fieldState.invalid ? "true" : "false"
+                                      }
+                                      disabled={isPending}
+                                      autoComplete="off"
+                                      className="min-h-40"
+                                      placeholder="Ghi chú khác"
+                                    ></Textarea>
+                                    {fieldState.invalid && (
+                                      <FieldError errors={[fieldState.error]} />
+                                    )}
+                                  </Field>
+                                )}
+                              />
+                            </FieldGroup>
+                            <FieldGroup>
+                              <Controller
+                                control={formOffer.control}
+                                name="contact"
+                                render={({ field, fieldState }) => (
+                                  <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel
+                                      htmlFor="contact"
+                                      className="sr-only"
+                                    >
+                                      Số liên lạc
+                                    </FieldLabel>
+                                    <Input
+                                      {...field}
+                                      id="contact"
+                                      aria-invalid={
+                                        fieldState.invalid ? "true" : "false"
+                                      }
+                                      type="text"
+                                      disabled={isPending}
+                                      autoComplete="off"
+                                      placeholder="Phương thức liên lạc"
+                                    />
+                                    {fieldState.invalid && (
+                                      <FieldError errors={[fieldState.error]} />
+                                    )}
+                                  </Field>
+                                )}
+                              />
+                            </FieldGroup>
+                          </div>
+                          <Button
+                            type="submit"
+                            className="bg-gradient text-white font-semibold"
+                          >
+                            Gửi đề nghị
+                          </Button>
+                        </form>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button className="flex-1 bg-linear-to-r from-emerald-500 to-emerald-700 text-white shadow-lg">
+                        Đề nghị trao đổi
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>
+                          Gửi đề nghị trao đổi cho người bán
+                        </DialogTitle>
+                        <DialogDescription>
+                          Bạn gửi đề nghị trao đổi hàng có cùng giá trị với sản
+                          phẩm này
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="flex items-center gap-2">
+                        <form
+                          onSubmit={formSwap.handleSubmit(postSwap)}
+                          className="grid flex-1 gap-2 space-y-6"
+                        >
+                          <FieldGroup>
+                            <Controller
+                              control={formSwap.control}
+                              name="note"
+                              render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                  <FieldLabel
+                                    htmlFor="note"
+                                    className="sr-only"
+                                  >
+                                    Chi tiết yêu cầu trao đổi
+                                  </FieldLabel>
+                                  <Textarea
+                                    {...field}
+                                    id="note"
+                                    aria-invalid={
+                                      fieldState.invalid ? "true" : "false"
+                                    }
+                                    disabled={isPending}
+                                    autoComplete="off"
+                                    className="min-h-40"
+                                  />
+                                  {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
+                                  )}
+                                </Field>
+                              )}
+                            />
+                          </FieldGroup>
+                          <Button
+                            type="submit"
+                            className="bg-gradient text-white font-semibold"
+                          >
+                            Gửi đề nghị
+                          </Button>
+                        </form>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </>
               ) : (
-                <Button className="flex-1 bg-linear-to-r from-emerald-500 to-emerald-700 text-white shadow-lg">
-                  Đề nghị mua
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="flex-1 border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+                    >
+                      Đề nghị mua
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Gửi đề nghị mua cho người bán</DialogTitle>
+                      <DialogDescription>
+                        Bạn cần đưa ra giá mặc cả, địa điểm giao dịch, thời gian
+                        cụ thể
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex items-center gap-2">
+                      <form
+                        onSubmit={formOffer.handleSubmit(postOffer)}
+                        className="grid flex-1 gap-2 space-y-6"
+                      >
+                        <div className="space-y-4">
+                          <FieldGroup>
+                            <Controller
+                              control={formOffer.control}
+                              name="price_offferd"
+                              render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                  <FieldLabel
+                                    htmlFor="price_offferd"
+                                    className="sr-only"
+                                  >
+                                    Giá đề nghị
+                                  </FieldLabel>
+                                  <Input
+                                    {...field}
+                                    id="price_offferd"
+                                    aria-invalid={
+                                      fieldState.invalid ? "true" : "false"
+                                    }
+                                    type="number"
+                                    disabled={isPending}
+                                    autoComplete="off"
+                                    placeholder="Giá đề nghị"
+                                    onChange={(e) =>
+                                      field.onChange(e.target.valueAsNumber)
+                                    }
+                                  />
+                                  {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
+                                  )}
+                                </Field>
+                              )}
+                            />
+                          </FieldGroup>
+                          <FieldGroup>
+                            <Controller
+                              control={formOffer.control}
+                              name="pickup_location"
+                              render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                  <FieldLabel
+                                    htmlFor="pickup_location"
+                                    className="sr-only"
+                                  >
+                                    Địa điểm giao dịch
+                                  </FieldLabel>
+                                  <Input
+                                    {...field}
+                                    id="pickup_location"
+                                    placeholder="Địa điểm giao dịch"
+                                    aria-invalid={
+                                      fieldState.invalid ? "true" : "false"
+                                    }
+                                    type="text"
+                                    disabled={isPending}
+                                    autoComplete="off"
+                                  />
+                                  {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
+                                  )}
+                                </Field>
+                              )}
+                            />
+                          </FieldGroup>
+                          <FieldGroup>
+                            <Controller
+                              control={formOffer.control}
+                              name="pickup_time"
+                              render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                  <FieldLabel
+                                    htmlFor="pickup_time"
+                                    className="sr-only"
+                                  >
+                                    Thời gian
+                                  </FieldLabel>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <Button
+                                        variant="outline"
+                                        data-empty={!date}
+                                        className="data-[empty=true]:text-muted-foreground w-53 justify-between text-left font-normal"
+                                      >
+                                        {date ? (
+                                          format(date, "PPP")
+                                        ) : (
+                                          <span>Chọn thời gian</span>
+                                        )}
+                                        <ChevronDownIcon />
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent
+                                      className="w-auto p-0"
+                                      align="start"
+                                    >
+                                      <Calendar
+                                        {...field}
+                                        id="pickup_time"
+                                        mode="single"
+                                        selected={date}
+                                        onSelect={setDate}
+                                        defaultMonth={date}
+                                      />
+                                    </PopoverContent>
+                                  </Popover>
+                                  {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
+                                  )}
+                                </Field>
+                              )}
+                            />
+                          </FieldGroup>
+                          <FieldGroup>
+                            <Controller
+                              control={formSwap.control}
+                              name="note"
+                              render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                  <FieldLabel
+                                    htmlFor="note"
+                                    className="sr-only"
+                                  >
+                                    Ghi chú
+                                  </FieldLabel>
+                                  <Textarea
+                                    {...field}
+                                    id="note"
+                                    aria-invalid={
+                                      fieldState.invalid ? "true" : "false"
+                                    }
+                                    disabled={isPending}
+                                    autoComplete="off"
+                                    className="min-h-40"
+                                    placeholder="Ghi chú khác"
+                                  />
+                                  {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
+                                  )}
+                                </Field>
+                              )}
+                            />
+                          </FieldGroup>
+                          <FieldGroup>
+                            <Controller
+                              control={formOffer.control}
+                              name="contact"
+                              render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                  <FieldLabel
+                                    htmlFor="contact"
+                                    className="sr-only"
+                                  >
+                                    Số liên lạc
+                                  </FieldLabel>
+                                  <Input
+                                    {...field}
+                                    id="contact"
+                                    aria-invalid={
+                                      fieldState.invalid ? "true" : "false"
+                                    }
+                                    type="text"
+                                    disabled={isPending}
+                                    autoComplete="off"
+                                    placeholder="Phương thức liên lạc"
+                                  />
+                                  {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
+                                  )}
+                                </Field>
+                              )}
+                            />
+                          </FieldGroup>
+                        </div>
+                        <Button
+                          type="submit"
+                          className="bg-gradient text-white font-semibold"
+                        >
+                          Gửi đề nghị
+                        </Button>
+                      </form>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               )}
             </div>
 

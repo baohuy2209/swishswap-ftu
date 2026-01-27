@@ -21,28 +21,27 @@ datasource db {
  */
 
 model User {
-  id               String    @id @default(cuid())
+  id               String           @id @default(cuid())
   name             String
-  email            String    @unique
-  email_verified   Boolean   @default(false)
+  email            String           @unique
+  email_verified   Boolean          @default(false)
   password_hash    String
   phone            String
   location         String?
   university_id    String
   avatar_url       String?
   evidence_url     String?
-  rating_count     Int       @default(0)
-  review_count     Int       @default(0)
-  created_at       DateTime  @default(now())
-  updated_at       DateTime  @updatedAt
+  rating_count     Int              @default(0)
+  review_count     Int              @default(0)
+  created_at       DateTime         @default(now())
+  updated_at       DateTime         @updatedAt
   university_name  String?
   listings         Listing[]
   orders           Order[]
-  authored_reviews Review[]  @relation("AuthorId")
-  received_reviews Review[]  @relation("ReceiverId")
-  offers_sender    Offer[]   @relation("OfferSender")
-  offers_receiver  Offer[]   @relation("OfferReceiver")
+  received_reviews Review[]         @relation("ReceiverId")
+  offers_receiver  Offer[]          @relation("OfferReceiver")
   sessions         Session[]
+  swapPreferences  SwapPreference[]
 }
 
 model Session {
@@ -158,11 +157,13 @@ model SwapPreference {
   id          String   @id @default(cuid())
   listing_id  String
   category_id String?
+  sender_id   String
   Note        String?
   created_at  DateTime @default(now())
 
   listing  Listing   @relation(fields: [listing_id], references: [id], onDelete: Cascade)
   category Category? @relation(fields: [category_id], references: [id])
+  user     User      @relation(fields: [sender_id], references: [id])
 
   @@index([listing_id])
   @@map("swap_preferences")
@@ -200,8 +201,8 @@ model Order {
 
   // Order details
   status             OrderStatus       @default(pending_payment)
-  payment_method     PaymentMethod
-  fulfillment_method FulfillmentMethod
+  payment_method     PaymentMethod     @default(cash)
+  fulfillment_method FulfillmentMethod @default(meetup)
 
   // Amounts
   item_price      Decimal @db.Decimal(12, 2)
@@ -250,7 +251,6 @@ model Order {
 model Review {
   id          String @id @default(cuid())
   order_id    String @unique
-  author_id   String
   receiver_id String
 
   rating  Int // 1-5 stars
@@ -260,7 +260,6 @@ model Review {
   updated_at DateTime @updatedAt
 
   order    Order @relation(fields: [order_id], references: [id])
-  author   User  @relation("AuthorId", fields: [author_id], references: [id])
   receiver User  @relation("ReceiverId", fields: [receiver_id], references: [id])
 
   @@index([receiver_id])
@@ -276,29 +275,20 @@ enum OfferStatus {
   expired
 }
 
-enum OfferType {
-  buy
-  swap
-}
-
 model Offer {
-  id          String @id @default(cuid())
-  listing_id  String
-  sender_id   String
-  receiver_id String
+  id         String @id @default(cuid())
+  listing_id String
+  sender_id  String
 
-  offer_type OfferType
-  status     OfferStatus @default(pending)
+  status OfferStatus @default(pending)
 
   // Buy offer
-  price_offered Decimal? @db.Decimal(12, 2)
-
-  // Swap offer
-  cash_topup Decimal? @db.Decimal(12, 2)
-
+  price_offered   Decimal? @db.Decimal(12, 2)
   // Pickup/delivery
-  pickup_location String?
-  pickup_time     DateTime?
+  pickup_location String
+  pickup_time     DateTime
+  note            String?
+  contact         String
 
   // Timestamps
   created_at   DateTime  @default(now())
@@ -307,10 +297,9 @@ model Offer {
   responded_at DateTime?
 
   // Relations
-  listing  Listing @relation(fields: [listing_id], references: [id])
-  sender   User    @relation("OfferSender", fields: [sender_id], references: [id])
-  receiver User    @relation("OfferReceiver", fields: [receiver_id], references: [id])
-  order    Order?
+  listing Listing @relation(fields: [listing_id], references: [id])
+  sender  User    @relation("OfferReceiver", fields: [sender_id], references: [id])
+  order   Order?
 
   @@index([listing_id])
   @@index([sender_id])

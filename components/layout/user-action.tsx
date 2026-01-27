@@ -16,6 +16,7 @@ import { logoutUser } from "@/actions/auth";
 import { Bell } from "lucide-react";
 import { useRouter } from "next/navigation";
 const UserAction = ({ user }: { user: Omit<User, "password_hash"> | null }) => {
+  const router = useRouter();
   if (!user) {
     return null;
   }
@@ -49,6 +50,7 @@ const UserAction = ({ user }: { user: Omit<User, "password_hash"> | null }) => {
             <span
               onClick={() => {
                 logoutUser();
+                router.push("/");
               }}
             >
               Đăng xuất

@@ -1,4 +1,5 @@
 "use client";
+import { Eye, Heart, Star } from "lucide-react";
 import { ListingClient } from "@/components/sell/current-listing";
 export function formatNumberVN(value: number): string {
   return new Intl.NumberFormat("vi-VN").format(value);
@@ -10,7 +11,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import React from "react";
-import { getSellerInfoByListingId } from "@/actions/listings";
+import { getSellerInfoByListingId, increaseHeart } from "@/actions/listings";
+import { getCategoryById } from "@/actions/category";
 type AuthorListing = {
   author: string;
   avatar: string | Blob | undefined;
@@ -22,7 +24,22 @@ function MarketingCard({ listing }: MarketingCardProp) {
     avatar: "",
     university_name: "",
   });
+  const [category, setCategory] = React.useState<string | undefined>("");
   const [error, setError] = React.useState("");
+  const [heart, setHeart] = React.useState<number>(listing.favorite_count);
+  const [isPending, startTransition] = React.useTransition();
+
+  const onHeart = () => {
+    setHeart((h) => h + 1);
+    startTransition(() => {
+      increaseHeart(listing.id).then((res) => {
+        if (res?.error) {
+          setHeart((h) => h - 1);
+        }
+      });
+    });
+  };
+
   React.useEffect(() => {
     getSellerInfoByListingId(listing.id).then((res) => {
       const { author, avatar, university_name } = res;
@@ -37,65 +54,145 @@ function MarketingCard({ listing }: MarketingCardProp) {
         avatar: avatar === null || avatar === undefined ? "/image.png" : avatar,
       });
     });
-  }, []);
+    getCategoryById(listing.id).then((res) => {
+      if (res.error) {
+        setError("Lỗi khi load data");
+      }
+      if (res.success) {
+        setCategory(res.category?.name);
+      }
+    });
+  }, [listing]);
+  function generateHashtags(
+    productName: string,
+    category: string | undefined,
+    maxTags = 8,
+  ): string[] {
+    const normalize = (text: string) =>
+      text
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // bỏ dấu
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, "") // bỏ ký tự đặc biệt
+        .trim();
+
+    const wordsFrom = (text: string) =>
+      normalize(text)
+        .split(/\s+/)
+        .filter((w) => w.length > 2);
+
+    const nameWords = wordsFrom(productName);
+    const tags = new Set<string>();
+
+    if (category) {
+      const categoryWords = wordsFrom(category);
+      categoryWords.forEach((w) => tags.add(`#${w}`));
+      if (categoryWords.length > 1) {
+        tags.add(`#${categoryWords.join("")}`);
+      }
+    }
+    // hashtag từ tên sản phẩm
+    nameWords.forEach((w) => tags.add(`#${w}`));
+    if (nameWords.length > 1) {
+      tags.add(`#${nameWords.join("")}`);
+    }
+
+    return Array.from(tags).slice(0, maxTags);
+  }
   return (
-    <div className="bg-white rounded-lg overflow-hidden relative space-y-3">
-      <div className="absolute top-2 right-2 z-10">
-        <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-bounce">
-          {listing.status}
-        </span>
-      </div>
-
-      <div className="relative h-48 w-full">
-        {listing.image_url && (
-          <Image
-            src={listing.image_url}
-            alt={listing.title || "Product Image"}
-            fill
-            className="object-cover p-2 rounded-md"
-            loading="lazy"
-          />
-        )}
-      </div>
-
-      <div className="p-4 space-y-4">
-        <h3 className="text-xl font-medium line-clamp-2 h-10 mb-1">
-          {listing.title}
-        </h3>
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col items-start justify-center gap-2">
-            <span className="text-sm font-medium">
-              {listing.description.length > 20
-                ? listing.description.substring(0, 20) + "..."
-                : listing.description}
+    <>
+      {error ? (
+        <p>Có lỗi, không thể load page được </p>
+      ) : (
+        <div className="flex flex-col h-full bg-white rounded-lg overflow-hidden relative space-y-3">
+          <div className="absolute top-2 right-2 z-10">
+            <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-bounce">
+              {listing.status}
             </span>
-            <span className="text-lg font-bold text-emerald-600">
-              {formatNumberVN(listing.price)} VNĐ
-            </span>
-            <div className="flex flex-row justify-center items-center gap-2">
-              <Avatar>
-                <AvatarImage src={seller.avatar} alt="Nguyễn Bảo Huy" />
-                <AvatarFallback>{seller.author}</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col justify-center items-start">
-                <span className="text-gradient font-bold text-lg">
-                  {seller.author}
+          </div>
+
+          <div className="relative h-48 w-full">
+            {listing.image_url && (
+              <Image
+                src={listing.image_url}
+                alt={listing.title || "Product Image"}
+                fill
+                className="object-cover p-2 rounded-md"
+                loading="lazy"
+              />
+            )}
+          </div>
+
+          <div className="p-4 space-y-4">
+            <h3 className="text-xl font-medium line-clamp-2 h-10 mb-1">
+              {listing.title}
+            </h3>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col items-start justify-center gap-2">
+                <span className="text-sm font-medium">
+                  {listing.description.length > 20
+                    ? listing.description.substring(0, 20) + "..."
+                    : listing.description}
                 </span>
-                <small className="text-sm text-gray-600">
-                  {seller.university_name}
-                </small>
+                <div className="w-full flex flex-col md:flex-row md:justify-between gap-2 justify-center items-start">
+                  <span className="text-lg font-bold text-emerald-600">
+                    {formatNumberVN(listing.price)} VNĐ
+                  </span>
+                  <div className="flex flex-col md:flex-row gap-2">
+                    <div
+                      onClick={() => {
+                        onHeart();
+                      }}
+                      className="flex items-center gap-1 rounded-full bg-white px-2 py-1 text-sm "
+                    >
+                      <Heart className="h-4 w-4 text-emerald-600 fill-emerald-600" />
+                      <span>{heart}</span>
+                    </div>
+
+                    {/* Views */}
+                    <div className="flex items-center gap-1 rounded-full bg-white px-2 py-1 text-sm ">
+                      <Eye className="h-4 w-4 text-gray-600" />
+                      <span>{listing.view_count}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {generateHashtags(listing.title, category, 3).map((tag) => (
+                    <span
+                      key={tag}
+                      className="bg-gradient text-white p-1 rounded-sm"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex flex-row justify-center items-center gap-2">
+                  <Avatar>
+                    <AvatarImage src={seller.avatar} alt="Nguyễn Bảo Huy" />
+                    <AvatarFallback>{seller.author}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col justify-center items-start">
+                    <span className="text-gradient font-bold text-lg">
+                      {seller.author}
+                    </span>
+                    <small className="text-sm text-gray-600">
+                      {seller.university_name}
+                    </small>
+                  </div>
+                </div>
               </div>
+              <Link
+                href={`market/${listing.id}`}
+                className="w-full text-center bg-gradient text-white py-2 rounded-full text-sm font-bold hover:brightness-110 transition-all"
+              >
+                View Details
+              </Link>
             </div>
           </div>
-          <Link
-            href={`market/${listing.id}`}
-            className="w-full text-center bg-gradient text-white py-2 rounded-full text-sm font-bold hover:brightness-110 transition-all"
-          >
-            View Details
-          </Link>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
 

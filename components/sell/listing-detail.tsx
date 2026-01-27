@@ -10,6 +10,9 @@ import RelatedImage from "@/components/sell/components/related-image";
 import React from "react";
 import { getUniveryById } from "@/actions/university";
 import { getCategoryById } from "@/actions/category";
+import { updateAvailableStateForListing } from "@/actions/listings";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 export interface ListingDetailProps {
   listingInfo: ListingClient;
   listMedia: ListingMedia[];
@@ -19,6 +22,8 @@ function ListingDetails({ listingInfo, listMedia }: ListingDetailProps) {
   const relatedImage = listMedia.filter((item) => !item.is_main_image);
   const [uni_name, setUni_name] = React.useState("");
   const [category, setCategory] = React.useState("");
+  const [isPending, startTransition] = React.useTransition();
+  const router = useRouter();
   React.useEffect(() => {
     getUniveryById(listingInfo.university_id).then((res) => {
       const { university } = res;
@@ -39,6 +44,31 @@ function ListingDetails({ listingInfo, listMedia }: ListingDetailProps) {
       }
     });
   }, [listingInfo.category_id]);
+  const postSell = () => {
+    startTransition(() => {
+      updateAvailableStateForListing(listingInfo.id).then((res) => {
+        const formatted = new Intl.DateTimeFormat("vi-VN", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }).format(new Date());
+        if (res.error) {
+          toast(res.error, {
+            description: `${formatted}`,
+          });
+        }
+        if (res.success) {
+          toast(res.success, {
+            description: `${formatted}`,
+          });
+          router.push("/sell");
+        }
+      });
+    });
+  };
   return (
     <div className="bg-gray-50">
       <div className="bg-white border-b border-gray-200">
@@ -115,7 +145,9 @@ function ListingDetails({ listingInfo, listMedia }: ListingDetailProps) {
             <div className="flex gap-4">
               <Button
                 variant="outline"
+                disabled={isPending}
                 className="flex-1 border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+                onClick={() => postSell()}
               >
                 Đăng bán
               </Button>

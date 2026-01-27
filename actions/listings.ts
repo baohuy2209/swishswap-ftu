@@ -3,9 +3,12 @@ import z from "zod";
 import prisma from "@/lib/db/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createListingSchema } from "@/schemas";
-import { getCurrentSession } from "./auth";
-import { getCategoryByName } from "./category";
-import { getUniveryById } from "./university";
+import { getCurrentSession } from "@/actions/auth";
+import { getCategoryByName } from "@/actions/category";
+import { getUniveryById } from "@/actions/university";
+import { NextResponse } from "next/server";
+
+// Xử lí uplaod
 export const uploadImageProduct = async (file: File) => {
   const fileExt = file.name.split(".").pop();
   const filePath = `image-listings/${crypto.randomUUID()}.${fileExt}`;
@@ -28,6 +31,7 @@ export const uploadImageProduct = async (file: File) => {
     .getPublicUrl(data.path);
   return { url: publicUrl.publicUrl };
 };
+// Xử lí đăng sản phẩm
 export const postProduct = async (
   values: z.infer<typeof createListingSchema>,
 ) => {
@@ -100,6 +104,7 @@ export const postProduct = async (
     };
   }
 };
+// Lấy Ảnh chính bằng listing_id
 export const getMainImageByListingId = async (id: string) => {
   try {
     const listingMedia = await prisma.listingMedia.findFirst({
@@ -117,6 +122,7 @@ export const getMainImageByListingId = async (id: string) => {
     return { error: "Lỗi khi lấy hình ảnh sản phẩm" };
   }
 };
+// Lấy thông tin các listing của user
 export const getUserCurrentListings = async () => {
   try {
     const { user } = await getCurrentSession();
@@ -142,7 +148,7 @@ export const getUserCurrentListings = async () => {
     };
   }
 };
-
+// Lấy thông tin chi tiết listing bằng id bao gồm cả các hình ảnh
 export async function getDetailListingsById(id: string) {
   const listingInfo = await prisma.listing.findUnique({
     where: {
@@ -159,7 +165,7 @@ export async function getDetailListingsById(id: string) {
     listMedia,
   };
 }
-
+// Load các listing của người dùng khác
 export async function getMarketList() {
   try {
     const { user } = await getCurrentSession();
@@ -174,6 +180,7 @@ export async function getMarketList() {
         seller_id: {
           not: user.id,
         },
+        status: "available",
       },
     });
     return {
@@ -187,6 +194,7 @@ export async function getMarketList() {
     };
   }
 }
+// Lấy thông tin của các listing trừ hình ảnh
 export async function getListingsById(id: string) {
   const listingInfo = await prisma.listing.findUnique({
     where: {
@@ -197,7 +205,7 @@ export async function getListingsById(id: string) {
     listingInfo,
   };
 }
-
+// Lấy thông tin tổng quan người bán của các listing
 export async function getSellerInfoByListingId(listing_id: string) {
   const { listingInfo } = await getListingsById(listing_id);
   if (!listingInfo) {
@@ -222,4 +230,117 @@ export async function getSellerInfoByListingId(listing_id: string) {
     avatar: user?.avatar_url,
     university_name: university?.label,
   };
+}
+// Chuyển trạng thái của listing là đăng bán - có status là available
+export async function updateAvailableStateForListing(listing_id: string) {
+  try {
+    await prisma.listing.update({
+      where: {
+        id: listing_id,
+      },
+      data: {
+        status: "available",
+        published_at: new Date(),
+      },
+    });
+    return {
+      success: "Đăng bán sản phẩm thành công",
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      error: "Có lỗi khi đăng bán sản phẩm",
+    };
+  }
+}
+// Chuyển trạng thái của listing là đăng bán - có status là reserved
+export async function updateReservedForListing(listing_id: string) {
+  try {
+    await prisma.listing.update({
+      where: {
+        id: listing_id,
+      },
+      data: {
+        status: "reserved",
+        reserved_at: new Date(),
+      },
+    });
+    return {
+      success: "Giao dịch với người mua thành công",
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      error: "Có lỗi khi giao dịch",
+    };
+  }
+}
+// Chuyển trạng thái của listing là đăng bán - có status là reserved
+export async function updateCompleteForListing(listing_id: string) {
+  try {
+    await prisma.listing.update({
+      where: {
+        id: listing_id,
+      },
+      data: {
+        status: "completed",
+        completed_at: new Date(),
+      },
+    });
+    return {
+      success: "Hoàn tất bán sản phẩm",
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      error: "Có lỗi từ cơ sở dữ liệu",
+    };
+  }
+}
+export async function increaseHeart(listing_id: string) {
+  try {
+    await prisma.listing.update({
+      where: { id: listing_id },
+      data: {
+        favorite_count: {
+          increment: 1,
+        },
+      },
+    });
+  } catch (e) {
+    console.log(e);
+    return { error: "Có lỗi phía server" };
+  }
+}
+export async function increaseViews(listing_id: string) {
+  try {
+    await prisma.listing.update({
+      where: { id: listing_id },
+      data: {
+        view_count: {
+          increment: 1,
+        },
+      },
+    });
+  } catch (e) {
+    console.log(e);
+    return { error: "Có lỗi phía server" };
+  }
+}
+export async function get3TopsListing() {
+  try {
+    const topListings = await prisma.listing.findMany({
+      orderBy: {
+        view_count: "desc",
+      },
+      take: 3,
+      where: {
+        status: "available",
+      },
+    });
+    return { topListings };
+  } catch (e) {
+    console.error(e);
+    return { error: "Lỗi khi lấy dữ liệu" };
+  }
 }
