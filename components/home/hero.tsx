@@ -28,14 +28,14 @@ export default function HeroSection() {
 
             {/* CTA */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
-              <Link href="/post">
+              <Link href="/sell">
                 <Button className="bg-emerald-600 hover:bg-emerald-500 text-white px-2 py-3 h-auto text-lg w-full sm:w-auto">
                   Đăng sản phẩm
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
 
-              <Link href="/marketplace">
+              <Link href="/market">
                 <Button
                   variant="outline"
                   className="border-emerald-500 text-emerald-700 hover:bg-indigo-50 px-2 py-3 h-auto text-lg w-full sm:w-auto"

@@ -37,10 +37,19 @@ import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { SwapPreference } from "@/lib/generated/prisma/client";
 import { acceptedForSwap, declinedForSwap } from "@/actions/swap";
+import { formatDateVN } from "@/lib/utils";
 export type SwapType = Omit<
   SwapPreference,
-  "category_id" | "sender_id" | "listing_id" | "updated_at" | "created_at"
+  | "category_id"
+  | "sender_id"
+  | "listing_id"
+  | "updated_at"
+  | "created_at"
+  | "product_price"
+  | "pickup_time"
 > & {
+  product_price: number | undefined;
+  pickup_time: string;
   listing_id: string | undefined;
   sender_id: string | undefined;
   category_id: string | undefined;
@@ -86,13 +95,13 @@ export function CurrentSwapOffer({ listSwaps }: { listSwaps: SwapType[] }) {
         <div className="capitalize">{row.getValue("listing_id")}</div>
       ),
     },
-    {
-      accessorKey: "category_id",
-      header: "Loại sản phẩm",
-      cell: ({ row }) => (
-        <div className="capitalize">{row.getValue("category_id")}</div>
-      ),
-    },
+    // {
+    //   accessorKey: "category_id",
+    //   header: "Loại sản phẩm",
+    //   cell: ({ row }) => (
+    //     <div className="capitalize">{row.getValue("category_id")}</div>
+    //   ),
+    // },
     {
       accessorKey: "sender_id",
       header: ({ column }) => {
@@ -111,30 +120,78 @@ export function CurrentSwapOffer({ listSwaps }: { listSwaps: SwapType[] }) {
       ),
     },
     {
-      accessorKey: "status",
-      header: () => <div className="text-right">Trạng thái</div>,
+      accessorKey: "product_name",
+      header: () => <div className="text-center">Tên sản phẩm</div>,
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">{row.getValue("status")}</div>
+          <div className="text-left font-medium">
+            {row.getValue("product_name")}
+          </div>
         );
       },
     },
     {
-      accessorKey: "note",
-      header: () => <div className="text-right">Chi tiết trao đổi</div>,
+      accessorKey: "product_price",
+      header: () => <div className="text-center">Giá</div>,
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">{row.getValue("note")}</div>
+          <div className="text-left font-medium">
+            {row.getValue("product_price")}
+          </div>
         );
       },
     },
     {
-      accessorKey: "contact",
-      header: () => <div className="text-right">Số liên lạc</div>,
+      accessorKey: "product_status",
+      header: () => <div className="text-center">Trạng thái sản phẩm</div>,
       cell: ({ row }) => {
         return (
           <div className="text-right font-medium">
-            {row.getValue("contact")}
+            {row.getValue("product_status")}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "pickup_location",
+      header: () => <div className="text-center">Địa điểm trao đổi</div>,
+      cell: ({ row }) => {
+        return (
+          <div className="text-left font-medium">
+            {row.getValue("pickup_location")}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "pickup_time",
+      header: () => <div className="text-center">Thời gian giao dịch</div>,
+      cell: ({ row }) => {
+        return (
+          <div className="text-left font-medium">
+            {formatDateVN(row.getValue("pickup_time"))}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "status",
+      header: () => <div className="text-center">Trạng thái đề nghị</div>,
+      cell: ({ row }) => {
+        return (
+          <div className="text-left font-medium">{row.getValue("status")}</div>
+        );
+      },
+    },
+    {
+      accessorKey: "Note",
+      header: () => <div className="text-center w-100">Chi tiết trao đổi</div>,
+      cell: ({ row }) => {
+        return (
+          <div className="text-left max-w-[600px]">
+            <p className="font-normal whitespace-pre-line break-words">
+              {row.getValue("Note")}
+            </p>
           </div>
         );
       },

@@ -40,3 +40,27 @@ export const createOrder = async (offer_id: string) => {
     },
   });
 };
+
+export const updateCompletedOrders = async (offer_id: string) => {
+  await prisma.order.update({
+    where: {
+      offer_id: offer_id,
+    },
+    data: {
+      completed_at: new Date(),
+      seller_cash_confirmed: true,
+      pickup_confirmed_at: new Date(),
+    },
+  });
+};
+
+export const updateCancelledOrders = async (offer_id: string) => {
+  await prisma.order.update({
+    where: {
+      offer_id: offer_id,
+    },
+    data: {
+      cancelled_at: new Date(),
+    },
+  });
+};

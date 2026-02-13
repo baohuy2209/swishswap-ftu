@@ -42,3 +42,17 @@ export const serializeListing = (item: Listing): ListingClient => ({
   reserved_at: item.reserved_at?.toISOString() ?? null,
   completed_at: item.completed_at?.toISOString() ?? null,
 });
+
+export function formatDateVN(isoString: string | null) {
+  const date = new Date(isoString ? isoString : new Date());
+
+  return date.toLocaleString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Ho_Chi_Minh",
+  });
+}

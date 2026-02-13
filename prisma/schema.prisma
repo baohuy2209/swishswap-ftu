@@ -160,15 +160,19 @@ enum SwapPreferenceStatus {
 }
 
 model SwapPreference {
-  id          String               @id @default(cuid())
-  listing_id  String
-  category_id String?
-  sender_id   String
-  Note        String
-  contact     String
-  status      SwapPreferenceStatus @default(pending)
-  created_at  DateTime             @default(now())
-  updated_at  DateTime             @updatedAt
+  id              String               @id @default(cuid())
+  listing_id      String
+  category_id     String?
+  sender_id       String
+  product_name    String
+  product_price   Decimal?             @db.Decimal(12, 2)
+  product_status  String
+  Note            String
+  pickup_location String?
+  pickup_time     DateTime?
+  status          SwapPreferenceStatus @default(pending)
+  created_at      DateTime             @default(now())
+  updated_at      DateTime             @updatedAt
 
   listing  Listing   @relation(fields: [listing_id], references: [id], onDelete: Cascade)
   category Category? @relation(fields: [category_id], references: [id])
@@ -294,7 +298,6 @@ model Offer {
   pickup_location String
   pickup_time     DateTime
   note            String?
-  contact         String
 
   // Timestamps
   created_at   DateTime  @default(now())

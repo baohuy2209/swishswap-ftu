@@ -1,6 +1,9 @@
 "use client";
 import { ListingMedia } from "@/lib/generated/prisma/client";
-import { ListingClient } from "@/components/sell/current-listing";
+import {
+  ListingCatalog,
+  ListingClient,
+} from "@/components/sell/current-listing";
 import { ChevronRight, Home, Hospital } from "lucide-react";
 import Image from "next/image";
 import { formatNumberVN } from "@/components/sell/components/listing-card";
@@ -42,11 +45,18 @@ import {
 import { format } from "date-fns";
 import { ChevronDownIcon } from "lucide-react";
 import ViewCounter from "./components/view-count";
+import ListingSameCategory from "./components/listing-same-category";
+import { formatDateVN } from "@/lib/utils";
 export interface MarketDetailProps {
   listingInfo: ListingClient;
   listMedia: ListingMedia[];
+  listingsSameCategory: ListingCatalog[] | undefined;
 }
-function MarketDetails({ listingInfo, listMedia }: MarketDetailProps) {
+function MarketDetails({
+  listingInfo,
+  listMedia,
+  listingsSameCategory,
+}: MarketDetailProps) {
   const [date, setDate] = React.useState<Date>();
   const [isPending, startTransition] = React.useTransition();
   const mainImage = listMedia.find((item) => item.is_main_image);
@@ -56,8 +66,12 @@ function MarketDetails({ listingInfo, listMedia }: MarketDetailProps) {
   const formSwap = useForm<z.infer<typeof postingSwapPrefrence>>({
     resolver: zodResolver(postingSwapPrefrence),
     defaultValues: {
+      product_name: "",
+      product_price: undefined,
+      product_status: "",
+      pickup_location: "",
+      pickup_time: new Date(),
       note: "",
-      contact: "",
     },
   });
   const formOffer = useForm<z.infer<typeof postingOffer>>({
@@ -378,36 +392,6 @@ function MarketDetails({ listingInfo, listMedia }: MarketDetailProps) {
                                 )}
                               />
                             </FieldGroup>
-                            <FieldGroup>
-                              <Controller
-                                control={formOffer.control}
-                                name="contact"
-                                render={({ field, fieldState }) => (
-                                  <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel
-                                      htmlFor="contact"
-                                      className="sr-only"
-                                    >
-                                      Số liên lạc
-                                    </FieldLabel>
-                                    <Input
-                                      {...field}
-                                      id="contact"
-                                      aria-invalid={
-                                        fieldState.invalid ? "true" : "false"
-                                      }
-                                      type="text"
-                                      disabled={isPending}
-                                      autoComplete="off"
-                                      placeholder="Phương thức liên lạc"
-                                    />
-                                    {fieldState.invalid && (
-                                      <FieldError errors={[fieldState.error]} />
-                                    )}
-                                  </Field>
-                                )}
-                              />
-                            </FieldGroup>
                           </div>
                           <Button
                             type="submit"
@@ -444,6 +428,177 @@ function MarketDetails({ listingInfo, listMedia }: MarketDetailProps) {
                           <FieldGroup>
                             <Controller
                               control={formSwap.control}
+                              name="product_name"
+                              render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                  <FieldLabel
+                                    htmlFor="product_name"
+                                    className="sr-only"
+                                  >
+                                    Tên sản phẩm trao đổi
+                                  </FieldLabel>
+                                  <Input
+                                    {...field}
+                                    id="product_name"
+                                    type="text"
+                                    aria-invalid={
+                                      fieldState.invalid ? "true" : "false"
+                                    }
+                                    disabled={isPending}
+                                    autoComplete="off"
+                                    placeholder="Tên sản phẩm muốn trao đổi"
+                                  />
+                                  {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
+                                  )}
+                                </Field>
+                              )}
+                            />
+                          </FieldGroup>
+                          <FieldGroup>
+                            <Controller
+                              control={formSwap.control}
+                              name="product_price"
+                              render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                  <FieldLabel
+                                    htmlFor="product_price"
+                                    className="sr-only"
+                                  >
+                                    Giá sản phẩm
+                                  </FieldLabel>
+                                  <Input
+                                    {...field}
+                                    id="product_price"
+                                    aria-invalid={
+                                      fieldState.invalid ? "true" : "false"
+                                    }
+                                    type="number"
+                                    disabled={isPending}
+                                    autoComplete="off"
+                                    placeholder="Trị giá sản phẩm trao đổi"
+                                    onChange={(e) =>
+                                      field.onChange(e.target.valueAsNumber)
+                                    }
+                                  />
+                                  {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
+                                  )}
+                                </Field>
+                              )}
+                            />
+                          </FieldGroup>
+                          <FieldGroup>
+                            <Controller
+                              control={formSwap.control}
+                              name="product_status"
+                              render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                  <FieldLabel
+                                    htmlFor="product_status"
+                                    className="sr-only"
+                                  >
+                                    Tình trạng sản phẩm
+                                  </FieldLabel>
+                                  <Input
+                                    {...field}
+                                    id="product_status"
+                                    type="text"
+                                    aria-invalid={
+                                      fieldState.invalid ? "true" : "false"
+                                    }
+                                    disabled={isPending}
+                                    autoComplete="off"
+                                    placeholder="Tình trạng sản phẩm hiện giờ"
+                                  />
+                                  {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
+                                  )}
+                                </Field>
+                              )}
+                            />
+                          </FieldGroup>
+                          <FieldGroup>
+                            <Controller
+                              control={formSwap.control}
+                              name="pickup_location"
+                              render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                  <FieldLabel
+                                    htmlFor="pickup_location"
+                                    className="sr-only"
+                                  >
+                                    Địa điểm trao đổi
+                                  </FieldLabel>
+                                  <Input
+                                    {...field}
+                                    id="pickup_location"
+                                    type="text"
+                                    aria-invalid={
+                                      fieldState.invalid ? "true" : "false"
+                                    }
+                                    disabled={isPending}
+                                    autoComplete="off"
+                                    placeholder="Địa điểm trao đổi"
+                                  />
+                                  {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
+                                  )}
+                                </Field>
+                              )}
+                            />
+                          </FieldGroup>
+                          <FieldGroup>
+                            <Controller
+                              control={formSwap.control}
+                              name="pickup_time"
+                              render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                  <FieldLabel
+                                    htmlFor="pickup_time"
+                                    className="sr-only"
+                                  >
+                                    Thời gian
+                                  </FieldLabel>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <Button
+                                        variant="outline"
+                                        data-empty={!date}
+                                        className="data-[empty=true]:text-muted-foreground w-53 justify-between text-left font-normal"
+                                      >
+                                        {date ? (
+                                          format(date, "PPP")
+                                        ) : (
+                                          <span>Chọn thời gian</span>
+                                        )}
+                                        <ChevronDownIcon />
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent
+                                      className="w-auto p-0"
+                                      align="start"
+                                    >
+                                      <Calendar
+                                        {...field}
+                                        id="pickup_time"
+                                        mode="single"
+                                        selected={date}
+                                        onSelect={setDate}
+                                        defaultMonth={date}
+                                      />
+                                    </PopoverContent>
+                                  </Popover>
+                                  {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
+                                  )}
+                                </Field>
+                              )}
+                            />
+                          </FieldGroup>
+                          <FieldGroup>
+                            <Controller
+                              control={formSwap.control}
                               name="note"
                               render={({ field, fieldState }) => (
                                 <Field data-invalid={fieldState.invalid}>
@@ -463,36 +618,6 @@ function MarketDetails({ listingInfo, listMedia }: MarketDetailProps) {
                                     autoComplete="off"
                                     className="min-h-40"
                                     placeholder="Mô tả chi tiết trao đổi"
-                                  />
-                                  {fieldState.invalid && (
-                                    <FieldError errors={[fieldState.error]} />
-                                  )}
-                                </Field>
-                              )}
-                            />
-                          </FieldGroup>
-                          <FieldGroup>
-                            <Controller
-                              control={formSwap.control}
-                              name="contact"
-                              render={({ field, fieldState }) => (
-                                <Field data-invalid={fieldState.invalid}>
-                                  <FieldLabel
-                                    htmlFor="contact"
-                                    className="sr-only"
-                                  >
-                                    Thông tin liên lạc
-                                  </FieldLabel>
-                                  <Input
-                                    {...field}
-                                    id="contact"
-                                    type="text"
-                                    aria-invalid={
-                                      fieldState.invalid ? "true" : "false"
-                                    }
-                                    disabled={isPending}
-                                    autoComplete="off"
-                                    placeholder="Số liên lạc"
                                   />
                                   {fieldState.invalid && (
                                     <FieldError errors={[fieldState.error]} />
@@ -649,7 +774,7 @@ function MarketDetails({ listingInfo, listMedia }: MarketDetailProps) {
                           </FieldGroup>
                           <FieldGroup>
                             <Controller
-                              control={formSwap.control}
+                              control={formOffer.control}
                               name="note"
                               render={({ field, fieldState }) => (
                                 <Field data-invalid={fieldState.invalid}>
@@ -669,37 +794,7 @@ function MarketDetails({ listingInfo, listMedia }: MarketDetailProps) {
                                     autoComplete="off"
                                     className="min-h-40"
                                     placeholder="Ghi chú khác"
-                                  />
-                                  {fieldState.invalid && (
-                                    <FieldError errors={[fieldState.error]} />
-                                  )}
-                                </Field>
-                              )}
-                            />
-                          </FieldGroup>
-                          <FieldGroup>
-                            <Controller
-                              control={formOffer.control}
-                              name="contact"
-                              render={({ field, fieldState }) => (
-                                <Field data-invalid={fieldState.invalid}>
-                                  <FieldLabel
-                                    htmlFor="contact"
-                                    className="sr-only"
-                                  >
-                                    Số liên lạc
-                                  </FieldLabel>
-                                  <Input
-                                    {...field}
-                                    id="contact"
-                                    aria-invalid={
-                                      fieldState.invalid ? "true" : "false"
-                                    }
-                                    type="text"
-                                    disabled={isPending}
-                                    autoComplete="off"
-                                    placeholder="Phương thức liên lạc"
-                                  />
+                                  ></Textarea>
                                   {fieldState.invalid && (
                                     <FieldError errors={[fieldState.error]} />
                                   )}
@@ -735,7 +830,7 @@ function MarketDetails({ listingInfo, listMedia }: MarketDetailProps) {
               />
               <InfoItem
                 label="Ngày đăng"
-                value={listingInfo.published_at ?? "Chưa đăng"}
+                value={formatDateVN(listingInfo.published_at) ?? "Chưa đăng"}
               />
             </div>
 
@@ -755,6 +850,7 @@ function MarketDetails({ listingInfo, listMedia }: MarketDetailProps) {
           </div>
         </div>
         <RelatedImage listRelatedImage={relatedImage} />
+        <ListingSameCategory listingsSameCategory={listingsSameCategory} />
       </div>
     </div>
   );
@@ -763,10 +859,38 @@ function MarketDetails({ listingInfo, listMedia }: MarketDetailProps) {
 export default MarketDetails;
 function InfoItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="font-semibold text-gray-800 mt-1">{value}</p>
-    </div>
+    <>
+      {label === "Tình trạng" ? (
+        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+          <p className="text-xs text-gray-500">{label}</p>
+          <p className="font-semibold text-gray-800 mt-1">
+            {value === "new"
+              ? "MỚI"
+              : value === "like_new"
+                ? "GẦN NHƯ MỚI"
+                : value === "good"
+                  ? "CÒN TỐT"
+                  : "SỬ DỤNG ĐƯỢC"}
+          </p>
+        </div>
+      ) : (
+        <>
+          {label === "Trạng Thái" ? (
+            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+              <p className="text-xs text-gray-500">{label}</p>
+              <p className="font-semibold text-gray-800 mt-1">
+                {value === "available" ? "Còn hàng" : "Không bán được"}
+              </p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+              <p className="text-xs text-gray-500">{label}</p>
+              <p className="font-semibold text-gray-800 mt-1">{value}</p>
+            </div>
+          )}
+        </>
+      )}
+    </>
   );
 }
 

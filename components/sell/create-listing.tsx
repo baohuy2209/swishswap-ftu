@@ -191,7 +191,8 @@ function CreateListings() {
                       Mô tả sản phẩm
                     </FieldLabel>
                     <FieldDescription>
-                      hãy điền mô tả sơ lược về sản phẩm
+                      Hãy điền mô tả sơ lược về sản phẩm. Lưu ý: mô tả càng chi
+                      tiết thì càng tăng lỷ lệ có người mua càng tăng
                     </FieldDescription>
                     <Textarea
                       id="description"
@@ -325,7 +326,7 @@ function CreateListings() {
                       Tải các ảnh minh họa
                     </FieldLabel>
                     <FieldDescription>
-                      Hãy tải các ảnh sản phẩm (tối thiểu ít nhất 3)
+                      Hãy tải các ảnh sản phẩm (tối thiểu ít nhất 4)
                     </FieldDescription>
                     <Input
                       type="file"

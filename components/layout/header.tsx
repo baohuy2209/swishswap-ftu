@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { Menu, X, Search } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 import { User } from "@/lib/generated/prisma/client";
 import UserAction from "./user-action";
-const Header = ({ user }: { user: Omit<User, "password_hash"> | null }) => {
+import { useSession } from "@/providers/session-provider";
+const Header = () => {
+  const user = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navLinks = [
     { href: "/", text: "Trang Chủ" },

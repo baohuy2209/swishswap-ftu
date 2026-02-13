@@ -12,7 +12,14 @@ export const createSwapPreference = async (
 ) => {
   const { user } = await getCurrentSession();
   const validatedField = postingSwapPrefrence.parse(values);
-  const { note, contact } = validatedField;
+  const {
+    product_name,
+    product_price,
+    product_status,
+    pickup_location,
+    pickup_time,
+    note,
+  } = validatedField;
   if (!user) {
     return {
       error: "Bạn cần đăng nhập để thực hiện thao thác này",
@@ -24,7 +31,11 @@ export const createSwapPreference = async (
       category_id: listingInfo.category_id,
       sender_id: user?.id,
       Note: note,
-      contact: contact,
+      product_name: product_name,
+      product_price: Number(product_price),
+      product_status: product_status,
+      pickup_location: pickup_location,
+      pickup_time: pickup_time,
     },
   });
   return {

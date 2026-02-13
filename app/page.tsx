@@ -35,7 +35,7 @@ export default async function Home() {
 
   return (
     <div className="w-full flex flex-col">
-      <Header user={user} />
+      <Header />
       <main>
         <HomePage safeListings={safeListings} />
       </main>

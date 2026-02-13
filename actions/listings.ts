@@ -370,3 +370,44 @@ export async function getListTitle(lists_id: string[]) {
   }
   return listTitle;
 }
+export async function getListHasSameUniversity() {
+  const { user } = await getCurrentSession();
+  const userUniversity = user?.university_id;
+  const listing_from_same_university = await prisma.listing.findMany({
+    where: {
+      university_id: userUniversity,
+      NOT: {
+        seller_id: user?.id,
+      },
+    },
+  });
+  return listing_from_same_university;
+}
+export async function getListingSameCategoryById(id: string) {
+  try {
+    const listingDetail = await getListingsById(id);
+    const { user } = await getCurrentSession();
+    if (!user) {
+      return {
+        listingsSameCategory: null,
+      };
+    }
+    const listingsSameCategory = await prisma.listing.findMany({
+      where: {
+        seller_id: {
+          not: user.id,
+        },
+        status: "available",
+        category_id: listingDetail.listingInfo?.category_id,
+      },
+    });
+    return {
+      listingsSameCategory,
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      listingsSameCategory: null,
+    };
+  }
+}

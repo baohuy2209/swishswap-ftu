@@ -29,7 +29,10 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { getAllUniversity } from "@/actions/university";
 import { University } from "@/lib/generated/prisma/client";
-
+function isEduEmail(email: string) {
+  const regex = /^[^\s@]+@[^\s@]+\.edu(\.[^\s@]+)?$/i;
+  return regex.test(email);
+}
 function RegisterForm() {
   const [isPending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | undefined>("");
@@ -51,6 +54,11 @@ function RegisterForm() {
     setError("");
     setSuccess("");
     startTransition(() => {
+      const { email } = RegisterSchema.parse(values);
+      const isValidateEmail = isEduEmail(email);
+      if (!isValidateEmail) {
+        setError("Không phải là mail edu");
+      }
       registerUser(values).then((res) => {
         if (res?.error) {
           setError(res?.error);

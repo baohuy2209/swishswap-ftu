@@ -17,9 +17,7 @@ export const createOffer = async (
     };
   }
   const validatedFields = postingOffer.parse(values);
-  const { price_offferd, pickup_location, pickup_time, note, contact } =
-    validatedFields;
-  console.log(note);
+  const { price_offferd, pickup_location, pickup_time, note } = validatedFields;
   await prisma.offer.create({
     data: {
       listing_id: listingInfo.id,
@@ -28,7 +26,6 @@ export const createOffer = async (
       pickup_location: pickup_location,
       pickup_time,
       note,
-      contact,
       expires_at: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
     },
   });

@@ -41,7 +41,7 @@ import {
   declinedForOffer,
 } from "@/actions/offer";
 import { toast } from "sonner";
-import { createOrder } from "@/actions/order";
+import { createOrder, updateCancelledOrders } from "@/actions/order";
 export type OfferType = Omit<
   Offer,
   | "price_offered"
@@ -127,16 +127,16 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
     },
     {
       accessorKey: "status",
-      header: () => <div className="text-right">Trạng thái</div>,
+      header: () => <div className="text-center">Trạng thái</div>,
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">{row.getValue("status")}</div>
+          <div className="text-left font-medium">{row.getValue("status")}</div>
         );
       },
     },
     {
       accessorKey: "price_offered",
-      header: () => <div className="text-right">Giá đề nghị</div>,
+      header: () => <div className="text-center">Giá đề nghị</div>,
       cell: ({ row }) => {
         // Format the amount as a dollar amount.
         const amount = parseFloat(row.getValue("price_offered"));
@@ -145,15 +145,15 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
           currency: "VND",
         }).format(amount);
 
-        return <div className="text-right font-medium">{formatted}</div>;
+        return <div className="text-left font-medium">{formatted}</div>;
       },
     },
     {
       accessorKey: "pickup_location",
-      header: () => <div className="text-right">Nơi giao dịch đề nghị</div>,
+      header: () => <div className="text-center">Nơi giao dịch đề nghị</div>,
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">
+          <div className="text-left font-medium">
             {row.getValue("pickup_location")}
           </div>
         );
@@ -171,22 +171,11 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
       },
     },
     {
-      accessorKey: "contact",
-      header: () => <div className="text-right">Số liên lạc</div>,
-      cell: ({ row }) => {
-        return (
-          <div className="text-right font-medium">
-            {row.getValue("contact")}
-          </div>
-        );
-      },
-    },
-    {
       accessorKey: "note",
-      header: () => <div className="text-right">Ghi chú</div>,
+      header: () => <div className="text-center w-100">Ghi chú</div>,
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">
+          <div className="text-left font-medium">
             {row.getValue("note") ? (
               <div>{row.getValue("note")}</div>
             ) : (
@@ -200,7 +189,6 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        console.log(row);
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -226,6 +214,7 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
                 <DropdownMenuItem
                   onClick={async () => {
                     await declinedForOffer(row.original.id);
+                    await updateCancelledOrders(row.original.id);
                     toast("Đã từ chối yêu cầu mua hàng");
                   }}
                 >
@@ -233,6 +222,8 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={async () => {
+                    await acceptedForOffer(row.original.id);
+                    await createOrder(row.original.id);
                     await completedForOffer(row.original.id);
                     toast("Hoàn thành giao dịch với người bán");
                   }}

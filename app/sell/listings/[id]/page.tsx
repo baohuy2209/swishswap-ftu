@@ -9,7 +9,6 @@ async function ListingDetailsPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { user } = await getCurrentSession();
   const { id } = await params;
   const { listingInfo, listMedia } = await getDetailListingsById(id);
   if (!listingInfo || !listMedia) {
@@ -26,7 +25,7 @@ async function ListingDetailsPage({
   };
   return (
     <div className="w-full flex-col">
-      <Header user={user} />
+      <Header />
       <div className="min-h-screen">
         <ListingDetails listingInfo={safeListing} listMedia={listMedia} />
       </div>

@@ -2,12 +2,14 @@
 import Link from "next/link";
 import { ListingWithImage } from ".";
 import MarketingCard from "../market/components/marketing-card";
+import { usePathname } from "next/navigation";
 
 function TrendingListing({
   safeListings,
 }: {
   safeListings?: ListingWithImage;
 }) {
+  const pathname = usePathname();
   if (safeListings === undefined) {
     return null;
   }
@@ -15,20 +17,21 @@ function TrendingListing({
     <div className="max-w-7xl mx-auto px-4 mt-10">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
+          <h2 className="text-2xl sm:text-2xl font-bold text-gray-800">
             🔥 Sản phẩm nổi bật
           </h2>
           <p className="text-sm text-gray-500 mt-1">
             Những món đồ đang được quan tâm nhiều nhất trên SwishSwap
           </p>
         </div>
-
-        <Link
-          href="/market"
-          className="text-sm text-green-600 hover:underline hidden sm:block"
-        >
-          Xem tất cả →
-        </Link>
+        {pathname.startsWith("/market") ? null : (
+          <Link
+            href="/market"
+            className="text-sm text-green-600 hover:underline hidden sm:block"
+          >
+            Xem tất cả →
+          </Link>
+        )}
       </div>
 
       <div className="w-full max-w-7xl mx-auto px-4 py-6 grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">

@@ -39,6 +39,8 @@ const SellPage = async () => {
     listSwap.map(async (item) => {
       return {
         ...item,
+        product_price: item.product_price?.toNumber(),
+        pickup_time: item.created_at.toISOString(),
         category_id: (await getCategoryById(item.id)).category?.name,
         sender_id: await getNameUserById(item.sender_id),
         listing_id: await getTitleByListingId(item.listing_id),
@@ -67,9 +69,10 @@ const SellPage = async () => {
       }),
     )
   ).filter((item): item is ListingCatalog => item !== null);
+  console.log(safeListSwaps);
   return (
     <div className="w-full flex flex-col">
-      <Header user={user} />
+      <Header />
       <div className="min-h-screen">
         <MainSell
           safeListings={safeListings}
