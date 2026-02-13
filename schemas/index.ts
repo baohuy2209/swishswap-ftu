@@ -71,7 +71,7 @@ export const createListingSchema = z.object({
   }),
   image_360: z
     .array(evindenceFileSchema)
-    .min(3, "Phải tải lên ít nhất 3 ảnh")
+    .min(3, "Phải tải lên ít nhất 4 ảnh")
     .max(10, "Chỉ được tải tối đa 10 ảnh"),
 });
 export const postingSwapPrefrence = z.object({
@@ -96,4 +96,20 @@ export const postingOffer = z.object({
     message: "Hãy chọn thời gian trao đổi cụ thể",
   }),
   note: z.string(),
+});
+export const userProfileSchema = z.object({
+  name: z.string().min(1, {
+    message: "Hãy nhập họ và tên",
+  }),
+  email: z.email({
+    message: "Hãy nhập email",
+  }),
+  university_name: z.string().min(1, {
+    message: "Hãy chọn trường đại học",
+  }),
+  phone: z.string().min(10, {
+    message: "Hãy nhập số điện thoại",
+  }),
+  avatar: evindenceFileSchema,
+  location: z.string(),
 });

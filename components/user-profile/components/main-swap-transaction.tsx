@@ -1,5 +1,5 @@
 "use client";
-
+import { SwapType } from "@/components/sell/current-swap-offer";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,43 +34,9 @@ import {
   type VisibilityState,
 } from "@tanstack/react-table";
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
-import { Offer } from "@/lib/generated/prisma/client";
-import {
-  acceptedForOffer,
-  completedForOffer,
-  declinedForOffer,
-} from "@/actions/offer";
-import { toast } from "sonner";
-import { createOrder, updateCancelledOrders } from "@/actions/order";
-import { updateCompleteForListing } from "@/actions/listings";
-export type OfferType = Omit<
-  Offer,
-  | "price_offered"
-  | "pickup_time"
-  | "created_at"
-  | "updated_at"
-  | "responded_at"
-  | "sender_id"
-  | "listing_id"
-> & {
-  listing_id: string | undefined;
-  sender_id: string | undefined;
-  price_offered: number | undefined;
-  pickup_time: string;
-  created_at: string;
-  updated_at: string;
-  responded_at: string;
-};
-export function formatDateTimeVN(date: string | Date) {
-  return new Intl.DateTimeFormat("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(date));
-}
-export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
+import { formatDateVN } from "@/lib/utils";
+
+function MainSwapTransaction({ safeListSwaps }: { safeListSwaps: SwapType[] }) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -78,8 +44,8 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const data = listOffers;
-  const columns: ColumnDef<OfferType>[] = [
+  const data = safeListSwaps;
+  const columns: ColumnDef<SwapType>[] = [
     {
       id: "select",
       header: ({ table }) => (
@@ -109,6 +75,13 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
         <div className="capitalize">{row.getValue("listing_id")}</div>
       ),
     },
+    // {
+    //   accessorKey: "category_id",
+    //   header: "Loại sản phẩm",
+    //   cell: ({ row }) => (
+    //     <div className="capitalize">{row.getValue("category_id")}</div>
+    //   ),
+    // },
     {
       accessorKey: "sender_id",
       header: ({ column }) => {
@@ -127,31 +100,41 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
       ),
     },
     {
-      accessorKey: "status",
-      header: () => <div className="text-center">Trạng thái</div>,
+      accessorKey: "product_name",
+      header: () => <div className="text-center">Tên sản phẩm</div>,
       cell: ({ row }) => {
         return (
-          <div className="text-left font-medium">{row.getValue("status")}</div>
+          <div className="text-left font-medium">
+            {row.getValue("product_name")}
+          </div>
         );
       },
     },
     {
-      accessorKey: "price_offered",
-      header: () => <div className="text-center">Giá đề nghị</div>,
+      accessorKey: "product_price",
+      header: () => <div className="text-center">Giá</div>,
       cell: ({ row }) => {
-        // Format the amount as a dollar amount.
-        const amount = parseFloat(row.getValue("price_offered"));
-        const formatted = new Intl.NumberFormat("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        }).format(amount);
-
-        return <div className="text-left font-medium">{formatted}</div>;
+        return (
+          <div className="text-left font-medium">
+            {row.getValue("product_price")}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "product_status",
+      header: () => <div className="text-center">Trạng thái sản phẩm</div>,
+      cell: ({ row }) => {
+        return (
+          <div className="text-right font-medium">
+            {row.getValue("product_status")}
+          </div>
+        );
       },
     },
     {
       accessorKey: "pickup_location",
-      header: () => <div className="text-center">Nơi giao dịch đề nghị</div>,
+      header: () => <div className="text-center">Địa điểm trao đổi</div>,
       cell: ({ row }) => {
         return (
           <div className="text-left font-medium">
@@ -162,82 +145,34 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
     },
     {
       accessorKey: "pickup_time",
-      header: () => <div className="text-right">Thời gian giao dịch</div>,
-      cell: ({ row }) => {
-        return (
-          <div className="text-right font-medium">
-            {formatDateTimeVN(row.getValue("pickup_time"))}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "note",
-      header: () => <div className="text-center w-100">Ghi chú</div>,
+      header: () => <div className="text-center">Thời gian giao dịch</div>,
       cell: ({ row }) => {
         return (
           <div className="text-left font-medium">
-            {row.getValue("note") ? (
-              <div>{row.getValue("note")}</div>
-            ) : (
-              <p>Không có</p>
-            )}
+            {formatDateVN(row.getValue("pickup_time"))}
           </div>
         );
       },
     },
     {
-      id: "actions",
-      enableHiding: false,
+      accessorKey: "status",
+      header: () => <div className="text-center">Trạng thái đề nghị</div>,
       cell: ({ row }) => {
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Các hành động</DropdownMenuLabel>
-              </DropdownMenuGroup>
-              <DropdownMenuGroup>
-                <DropdownMenuItem
-                  onClick={async () => {
-                    await acceptedForOffer(row.original.id);
-                    await createOrder(row.original.id);
-                    toast("Đã chấp nhận yêu cầu mua hàng");
-                  }}
-                  disabled={row.original.status === "accepted" ? true : false}
-                >
-                  Chấp nhận
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={async () => {
-                    await declinedForOffer(row.original.id);
-                    await updateCancelledOrders(row.original.id);
-                    toast("Đã từ chối yêu cầu mua hàng");
-                  }}
-                >
-                  Từ chối
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={async () => {
-                    if (row.original.status === "pending") {
-                      await acceptedForOffer(row.original.id);
-                      await createOrder(row.original.id);
-                    }
-                    await completedForOffer(row.original.id);
-                    await updateCompleteForListing(row.original.id);
-                    toast("Hoàn thành giao dịch với người bán");
-                  }}
-                >
-                  Hoàn thành giao dịch
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="text-left font-medium">{row.getValue("status")}</div>
+        );
+      },
+    },
+    {
+      accessorKey: "Note",
+      header: () => <div className="text-center w-100">Chi tiết trao đổi</div>,
+      cell: ({ row }) => {
+        return (
+          <div className="text-left max-w-[600px]">
+            <p className="font-normal whitespace-pre-line wrap-break-word">
+              {row.getValue("Note")}
+            </p>
+          </div>
         );
       },
     },
@@ -260,7 +195,6 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
       rowSelection,
     },
   });
-
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
@@ -380,3 +314,5 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
     </div>
   );
 }
+
+export default MainSwapTransaction;

@@ -42,6 +42,7 @@ model User {
   offers_receiver  Offer[]          @relation("OfferReceiver")
   sessions         Session[]
   swapPreferences  SwapPreference[]
+  billings         Billing[]
 }
 
 model Session {
@@ -314,4 +315,34 @@ model Offer {
   @@index([sender_id])
   @@index([created_at])
   @@map("offers")
+}
+
+enum BillingFeeType {
+  buy_sell // Phí mua bán
+  exchange // Phí trao đổi
+}
+
+enum BillingStatus {
+  pending
+  paid
+}
+
+model Billing {
+  id String @id @default(cuid())
+
+  user_id  String
+  order_id String?
+
+  amount   Decimal @db.Decimal(12, 2)
+  currency String  @default("VND")
+
+  fee_type BillingFeeType
+  status   BillingStatus  @default(pending)
+
+  invoice_url String?
+
+  created_at DateTime  @default(now())
+  paid_at    DateTime?
+
+  user User @relation(fields: [user_id], references: [id])
 }

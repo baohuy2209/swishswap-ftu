@@ -5,8 +5,8 @@ import {
   getTitleByListingId,
   getUserCurrentListings,
 } from "@/actions/listings";
-import { getUserOffers } from "@/actions/offer";
-import { getUserSwaps } from "@/actions/swap";
+import { getUserOffersAvailable } from "@/actions/offer";
+import { getUserSwapsAvailable } from "@/actions/swap";
 import { getNameUserById } from "@/actions/user";
 import Footer from "@/components/layout/footer";
 import Header from "@/components/layout/header";
@@ -16,8 +16,8 @@ import MainSell from "@/components/sell/main-sell";
 const SellPage = async () => {
   const { user } = await getCurrentSession();
   const { userListings } = await getUserCurrentListings();
-  const listOffers = await getUserOffers();
-  const listSwap = await getUserSwaps();
+  const listOffers = await getUserOffersAvailable();
+  const listSwap = await getUserSwapsAvailable();
   if (userListings === null) {
     return null;
   }

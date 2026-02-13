@@ -64,6 +64,20 @@ export const getUserOffers = async () => {
   }
   return listOffers;
 };
+
+export const getUserOffersAvailable = async () => {
+  const arrayListingIdCurrentUser = await getArrayListingIdFromUser();
+  const listOffers: Offer[] = [];
+  const length_array = arrayListingIdCurrentUser.length;
+  for (let i = 0; i < length_array; i++) {
+    const { offers } = await getOfferByListingId(arrayListingIdCurrentUser[i]);
+    if (!offers) continue;
+    listOffers.push(...offers);
+  }
+  return listOffers.filter(
+    (item) => item.status === "pending" || item.status === "accepted",
+  );
+};
 export async function acceptedForOffer(offer_id: string) {
   try {
     await prisma.offer.update({

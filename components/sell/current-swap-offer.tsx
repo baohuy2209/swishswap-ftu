@@ -189,7 +189,7 @@ export function CurrentSwapOffer({ listSwaps }: { listSwaps: SwapType[] }) {
       cell: ({ row }) => {
         return (
           <div className="text-left max-w-[600px]">
-            <p className="font-normal whitespace-pre-line break-words">
+            <p className="font-normal whitespace-pre-line wrap-break-word">
               {row.getValue("Note")}
             </p>
           </div>

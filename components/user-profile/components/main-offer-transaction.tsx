@@ -1,5 +1,8 @@
 "use client";
-
+import {
+  formatDateTimeVN,
+  OfferType,
+} from "@/components/sell/current-buy-offer";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,43 +37,11 @@ import {
   type VisibilityState,
 } from "@tanstack/react-table";
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
-import { Offer } from "@/lib/generated/prisma/client";
-import {
-  acceptedForOffer,
-  completedForOffer,
-  declinedForOffer,
-} from "@/actions/offer";
-import { toast } from "sonner";
-import { createOrder, updateCancelledOrders } from "@/actions/order";
-import { updateCompleteForListing } from "@/actions/listings";
-export type OfferType = Omit<
-  Offer,
-  | "price_offered"
-  | "pickup_time"
-  | "created_at"
-  | "updated_at"
-  | "responded_at"
-  | "sender_id"
-  | "listing_id"
-> & {
-  listing_id: string | undefined;
-  sender_id: string | undefined;
-  price_offered: number | undefined;
-  pickup_time: string;
-  created_at: string;
-  updated_at: string;
-  responded_at: string;
-};
-export function formatDateTimeVN(date: string | Date) {
-  return new Intl.DateTimeFormat("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(date));
-}
-export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
+function MainOfferTransaction({
+  safeListOffers,
+}: {
+  safeListOffers: OfferType[];
+}) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -78,7 +49,7 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const data = listOffers;
+  const data = safeListOffers;
   const columns: ColumnDef<OfferType>[] = [
     {
       id: "select",
@@ -186,61 +157,6 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
         );
       },
     },
-    {
-      id: "actions",
-      enableHiding: false,
-      cell: ({ row }) => {
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Các hành động</DropdownMenuLabel>
-              </DropdownMenuGroup>
-              <DropdownMenuGroup>
-                <DropdownMenuItem
-                  onClick={async () => {
-                    await acceptedForOffer(row.original.id);
-                    await createOrder(row.original.id);
-                    toast("Đã chấp nhận yêu cầu mua hàng");
-                  }}
-                  disabled={row.original.status === "accepted" ? true : false}
-                >
-                  Chấp nhận
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={async () => {
-                    await declinedForOffer(row.original.id);
-                    await updateCancelledOrders(row.original.id);
-                    toast("Đã từ chối yêu cầu mua hàng");
-                  }}
-                >
-                  Từ chối
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={async () => {
-                    if (row.original.status === "pending") {
-                      await acceptedForOffer(row.original.id);
-                      await createOrder(row.original.id);
-                    }
-                    await completedForOffer(row.original.id);
-                    await updateCompleteForListing(row.original.id);
-                    toast("Hoàn thành giao dịch với người bán");
-                  }}
-                >
-                  Hoàn thành giao dịch
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    },
   ];
   const table = useReactTable({
     data,
@@ -260,7 +176,6 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
       rowSelection,
     },
   });
-
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
@@ -380,3 +295,5 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
     </div>
   );
 }
+
+export default MainOfferTransaction;

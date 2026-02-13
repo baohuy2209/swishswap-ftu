@@ -115,3 +115,17 @@ export const getUserSwaps = async () => {
   }
   return listSwap;
 };
+
+export const getUserSwapsAvailable = async () => {
+  const arrayListingIdCurrentUser = await getArrayListingIdFromUser();
+  const listSwap: SwapPreference[] = [];
+  const length_array = arrayListingIdCurrentUser.length;
+  for (let i = 0; i < length_array; i++) {
+    const { swapReferences } = await getSwapByListingId(
+      arrayListingIdCurrentUser[i],
+    );
+    if (!swapReferences) continue;
+    listSwap.push(...swapReferences);
+  }
+  return listSwap.filter((item) => item.status === "pending");
+};

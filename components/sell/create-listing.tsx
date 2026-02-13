@@ -82,7 +82,9 @@ function CreateListings() {
             form.reset();
           }
         })
-        .catch();
+        .catch((err) => {
+          setError(err.message);
+        });
     });
   };
   React.useEffect(() => {
