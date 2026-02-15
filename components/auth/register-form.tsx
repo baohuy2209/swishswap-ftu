@@ -58,10 +58,12 @@ function RegisterForm() {
       const isValidateEmail = isEduEmail(email);
       if (!isValidateEmail) {
         setError("Không phải là mail edu");
+        return;
       }
       registerUser(values).then((res) => {
         if (res?.error) {
           setError(res?.error);
+          return;
         }
         if (res?.success) {
           setSuccess(res?.success);

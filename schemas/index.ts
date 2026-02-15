@@ -10,7 +10,7 @@ export const LoginSchema = z.object({
 export const RegisterSchema = z
   .object({
     email: z.email({
-      message: "Hãy nhập email",
+      message: "Sai định dạng email",
     }),
     password: z.string().min(6, {
       message: "Password có ít nhất 6 kí tự",
