@@ -41,8 +41,9 @@ import {
   declinedForOffer,
 } from "@/actions/offer";
 import { toast } from "sonner";
-import { createOrder, updateCancelledOrders } from "@/actions/order";
+import { createOrderFromOffer, updateCancelledOrders } from "@/actions/order";
 import { updateCompleteForListing } from "@/actions/listings";
+import { createBillingForTypeBuySell } from "@/actions/billing";
 export type OfferType = Omit<
   Offer,
   | "price_offered"
@@ -205,8 +206,23 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
               <DropdownMenuGroup>
                 <DropdownMenuItem
                   onClick={async () => {
+                    await updateCompleteForListing(row.original?.listing_id!);
                     await acceptedForOffer(row.original.id);
-                    await createOrder(row.original.id);
+                    await createOrderFromOffer(row.original.id);
+                    const res_billing = await createBillingForTypeBuySell(
+                      row.original.id,
+                    );
+                    if (res_billing?.error) {
+                      const formatted = new Intl.DateTimeFormat("vi-VN", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      }).format(new Date());
+                      toast(res_billing.error, { description: `${formatted}` });
+                    }
                     toast("Đã chấp nhận yêu cầu mua hàng");
                   }}
                   disabled={row.original.status === "accepted" ? true : false}
@@ -216,7 +232,7 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
                 <DropdownMenuItem
                   onClick={async () => {
                     await declinedForOffer(row.original.id);
-                    await updateCancelledOrders(row.original.id);
+                    // await updateCancelledOrders(row.original.id);
                     toast("Đã từ chối yêu cầu mua hàng");
                   }}
                 >
@@ -225,11 +241,26 @@ export function CurrentBuyOffer({ listOffers }: { listOffers: OfferType[] }) {
                 <DropdownMenuItem
                   onClick={async () => {
                     if (row.original.status === "pending") {
+                      await updateCompleteForListing(row.original?.listing_id!);
                       await acceptedForOffer(row.original.id);
-                      await createOrder(row.original.id);
+                      await createOrderFromOffer(row.original.id);
                     }
                     await completedForOffer(row.original.id);
                     await updateCompleteForListing(row.original.id);
+                    const res_billing = await createBillingForTypeBuySell(
+                      row.original.id,
+                    );
+                    if (res_billing?.error) {
+                      const formatted = new Intl.DateTimeFormat("vi-VN", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      }).format(new Date());
+                      toast(res_billing.error, { description: `${formatted}` });
+                    }
                     toast("Hoàn thành giao dịch với người bán");
                   }}
                 >

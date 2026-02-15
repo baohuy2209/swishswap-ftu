@@ -193,6 +193,31 @@ export async function getMarketList() {
     };
   }
 }
+export async function getSellerListing(seller_id: string) {
+  try {
+    const { user } = await getCurrentSession();
+    if (!user) {
+      return {
+        sellerListings: null,
+        error: "Bạn chưa đăng nhập",
+      };
+    }
+    const sellerListings = await prisma.listing.findMany({
+      where: {
+        seller_id: seller_id,
+      },
+    });
+    return {
+      sellerListings,
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      sellerListings: null,
+      error: "Lỗi khi lấy dữ liệu",
+    };
+  }
+}
 // Lấy thông tin của các listing trừ hình ảnh
 export async function getListingsById(id: string) {
   const listingInfo = await prisma.listing.findUnique({
@@ -228,6 +253,8 @@ export async function getSellerInfoByListingId(listing_id: string) {
     author: user?.name,
     avatar: user?.avatar_url,
     university_name: university?.label,
+    rating_count: user?.rating_count,
+    seller_id: user.id,
   };
 }
 // Chuyển trạng thái của listing là đăng bán - có status là available

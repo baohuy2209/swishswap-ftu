@@ -259,7 +259,6 @@ function MarketDetails({
                                   <Field data-invalid={fieldState.invalid}>
                                     <FieldLabel
                                       htmlFor="price_offferd"
-                                      className="sr-only"
                                     >
                                       Giá đề nghị
                                     </FieldLabel>
@@ -292,7 +291,6 @@ function MarketDetails({
                                   <Field data-invalid={fieldState.invalid}>
                                     <FieldLabel
                                       htmlFor="pickup_location"
-                                      className="sr-only"
                                     >
                                       Địa điểm giao dịch
                                     </FieldLabel>
@@ -322,7 +320,6 @@ function MarketDetails({
                                   <Field data-invalid={fieldState.invalid}>
                                     <FieldLabel
                                       htmlFor="pickup_time"
-                                      className="sr-only"
                                     >
                                       Thời gian
                                     </FieldLabel>
@@ -370,7 +367,6 @@ function MarketDetails({
                                   <Field data-invalid={fieldState.invalid}>
                                     <FieldLabel
                                       htmlFor="note"
-                                      className="sr-only"
                                     >
                                       Ghi chú
                                     </FieldLabel>

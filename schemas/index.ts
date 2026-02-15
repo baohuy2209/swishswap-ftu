@@ -113,3 +113,10 @@ export const userProfileSchema = z.object({
   avatar: evindenceFileSchema,
   location: z.string(),
 });
+
+export const reviewSchema = z.object({
+  rating: z.string(),
+  comment: z.string().min(1, {
+    message: "Hãy nhập đánh giá về người bán",
+  }),
+});

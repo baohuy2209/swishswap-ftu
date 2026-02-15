@@ -38,6 +38,9 @@ import { toast } from "sonner";
 import { SwapPreference } from "@/lib/generated/prisma/client";
 import { acceptedForSwap, declinedForSwap } from "@/actions/swap";
 import { formatDateVN } from "@/lib/utils";
+import { createOrderFromSwap } from "@/actions/order";
+import { createBillingForTypeExchange } from "@/actions/billing";
+import { updateCompleteForListing } from "@/actions/listings";
 export type SwapType = Omit<
   SwapPreference,
   | "category_id"
@@ -143,10 +146,12 @@ export function CurrentSwapOffer({ listSwaps }: { listSwaps: SwapType[] }) {
     },
     {
       accessorKey: "product_status",
-      header: () => <div className="text-center">Trạng thái sản phẩm</div>,
+      header: () => (
+        <div className="text-center w-100">Trạng thái sản phẩm</div>
+      ),
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">
+          <div className="text-left font-normal w-100 whitespace-pre-line wrap-break-word">
             {row.getValue("product_status")}
           </div>
         );
@@ -216,7 +221,23 @@ export function CurrentSwapOffer({ listSwaps }: { listSwaps: SwapType[] }) {
               <DropdownMenuGroup>
                 <DropdownMenuItem
                   onClick={async () => {
+                    await updateCompleteForListing(row.original?.listing_id!);
                     await acceptedForSwap(row.original.id);
+                    await createOrderFromSwap(row.original.id);
+                    const res_billing = await createBillingForTypeExchange(
+                      row.original.id,
+                    );
+                    if (res_billing?.error) {
+                      const formatted = new Intl.DateTimeFormat("vi-VN", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      }).format(new Date());
+                      toast(res_billing.error, { description: `${formatted}` });
+                    }
                     toast("Đã chấp nhận yêu cầu đổi hàng");
                   }}
                 >

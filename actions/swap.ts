@@ -62,6 +62,25 @@ export async function getSwapByListingId(listing_id: string) {
     };
   }
 }
+export async function getSwapById(id: string) {
+  try {
+    const swapReference = await prisma.swapPreference.findUnique({
+      where: {
+        id: id,
+      },
+    });
+    return {
+      success: "Load thành công",
+      swapReference,
+    };
+  } catch (e) {
+    console.log(e instanceof Error ? `${e.message}` : "");
+    return {
+      error: "Lỗi khi load thông tin các loại sản phẩm ",
+      swapReference: null,
+    };
+  }
+}
 export async function acceptedForSwap(swap_id: string) {
   try {
     await prisma.swapPreference.update({

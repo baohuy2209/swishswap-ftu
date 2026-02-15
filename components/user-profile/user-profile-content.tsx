@@ -9,13 +9,57 @@ import MainSettings from "@/components/user-profile/components/main-settings";
 import MainTransaction from "@/components/user-profile/components/main-transaction";
 import { OfferType } from "../sell/current-buy-offer";
 import { SwapType } from "../sell/current-swap-offer";
+import { Billing, Order } from "@/lib/generated/prisma/client";
+import MainOrderReview from "./components/main-order-review";
 export interface UserProfileContentProps {
   safeListOffers: OfferType[];
   safeListSwaps: SwapType[];
+  safeListBillings: (Omit<Billing, "amount" | "created_at" | "paid_at"> & {
+    amount: number | undefined;
+    created_at: string | undefined;
+    paid_at: string | undefined;
+  })[];
+  // safeListOrders: (Omit<
+  //   Order,
+  //   | "item_price"
+  //   | "transaction_fee"
+  //   | "total_amount"
+  //   | "payment_submitted_at"
+  //   | "payment_confirmed_at"
+  //   | "cash_confirmed_at"
+  //   | "pickup_time"
+  //   | "pickup_confirmed_at"
+  //   | "created_at"
+  //   | "completed_at"
+  //   | "cancelled_at"
+  // > & {
+  //   item_price: number | undefined;
+  //   transaction_fee: number | undefined;
+  //   total_amount: number | undefined;
+  //   payment_submitted_at: string | undefined;
+  //   payment_confirmed_at: string | undefined;
+  //   cash_confirmed_at: string | undefined;
+  //   pickup_time: string | undefined;
+  //   pickup_confirmed_at: string | undefined;
+  //   created_at: string | undefined;
+  //   completed_at: string | undefined;
+  //   cancelled_at: string | undefined;
+  // })[];
+  listInfoReview: {
+    order_id: string | undefined;
+    receiver_id: string | undefined;
+    image: string | undefined;
+    name: string | undefined;
+    description: string | undefined;
+    price: number | undefined;
+    seller: string | undefined;
+  }[];
 }
 function UserProfileContent({
   safeListOffers,
   safeListSwaps,
+  safeListBillings,
+  listInfoReview,
 }: UserProfileContentProps) {
   const user = useSession();
   return (
@@ -70,7 +114,7 @@ function UserProfileContent({
               Theo dõi các giao dịch
             </TabsTrigger>
             <TabsTrigger value="preferences">Cài đặt</TabsTrigger>
-            <TabsTrigger value="preferences">
+            <TabsTrigger value="order-review">
               Các đơn hàng cần đánh giá
             </TabsTrigger>
           </TabsList>
@@ -79,7 +123,7 @@ function UserProfileContent({
             <MainUserProfile user={user} />
           </TabsContent>
           <TabsContent value="billing" className="space-y-6">
-            <MainBilling />
+            <MainBilling safeListBilling={safeListBillings} />
           </TabsContent>
           <TabsContent value="preferences" className="space-y-6">
             <MainSettings />
@@ -89,6 +133,9 @@ function UserProfileContent({
               safeListOffers={safeListOffers}
               safeListSwaps={safeListSwaps}
             />
+          </TabsContent>
+          <TabsContent value="order-review" className="space-y-6">
+            <MainOrderReview listInfoReview={listInfoReview} />
           </TabsContent>
         </Tabs>
       </div>

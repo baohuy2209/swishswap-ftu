@@ -37,11 +37,12 @@ const SellPage = async () => {
   );
   const safeListSwaps = await Promise.all(
     listSwap.map(async (item) => {
+      const { category } = await getCategoryById(item.category_id);
       return {
         ...item,
         product_price: item.product_price?.toNumber(),
         pickup_time: item.created_at.toISOString(),
-        category_id: (await getCategoryById(item.id)).category?.name,
+        category_id: category?.name,
         sender_id: await getNameUserById(item.sender_id),
         listing_id: await getTitleByListingId(item.listing_id),
         created_at: item.created_at.toISOString(),
@@ -69,7 +70,6 @@ const SellPage = async () => {
       }),
     )
   ).filter((item): item is ListingCatalog => item !== null);
-  console.log(safeListSwaps);
   return (
     <div className="w-full flex flex-col">
       <Header />

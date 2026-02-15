@@ -31,7 +31,7 @@ model User {
   university_id    String
   avatar_url       String?
   evidence_url     String?
-  rating_count     Int              @default(0)
+  rating_count     Int              @default(5)
   review_count     Int              @default(0)
   created_at       DateTime         @default(now())
   updated_at       DateTime         @updatedAt
@@ -163,7 +163,7 @@ enum SwapPreferenceStatus {
 model SwapPreference {
   id              String               @id @default(cuid())
   listing_id      String
-  category_id     String?
+  category_id     String
   sender_id       String
   product_name    String
   product_price   Decimal?             @db.Decimal(12, 2)
@@ -246,10 +246,10 @@ model Order {
 
   // Relations
   listing Listing @relation(fields: [listing_id], references: [id])
-  offer   Offer   @relation(fields: [offer_id], references: [id])
   review  Review?
   user    User?   @relation(fields: [userId], references: [id])
   userId  String?
+  offers  Offer[]
 
   @@index([buyer_id])
   @@index([seller_id])
@@ -309,7 +309,8 @@ model Offer {
   // Relations
   listing Listing @relation(fields: [listing_id], references: [id])
   sender  User    @relation("OfferReceiver", fields: [sender_id], references: [id])
-  order   Order?
+  order   Order?  @relation(fields: [orderId], references: [id])
+  orderId String?
 
   @@index([listing_id])
   @@index([sender_id])
@@ -318,8 +319,8 @@ model Offer {
 }
 
 enum BillingFeeType {
-  buy_sell // Phí mua bán
-  exchange // Phí trao đổi
+  buy_sell
+  exchange
 }
 
 enum BillingStatus {

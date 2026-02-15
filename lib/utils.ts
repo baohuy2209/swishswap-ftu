@@ -1,8 +1,14 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Listing } from "./generated/prisma/client";
-import { ListingClient } from "@/components/sell/current-listing";
-
+import {
+  ListingCatalog,
+  ListingClient,
+} from "@/components/sell/current-listing";
+import {
+  SafeUserWithExtras,
+  UserWithExtras,
+} from "@/components/seller-profile/seller-profile";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -55,4 +61,23 @@ export function formatDateVN(isoString: string | null) {
     hour12: false,
     timeZone: "Asia/Ho_Chi_Minh",
   });
+}
+export function toSafeUserWithExtras(
+  user: Omit<UserWithExtras, "listings"> & {
+    listings: (ListingCatalog | null)[];
+  },
+): SafeUserWithExtras {
+  const { password_hash, ...rest } = user;
+
+  const review_count = user.received_reviews.length;
+  const rating_count =
+    review_count === 0
+      ? 0
+      : user.received_reviews.reduce((s, r) => s + r.rating, 0) / review_count;
+
+  return {
+    ...rest,
+    rating_count,
+    review_count,
+  };
 }

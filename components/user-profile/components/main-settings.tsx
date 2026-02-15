@@ -16,7 +16,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Download, Save, Trash2 } from "lucide-react";
+import { Download, Trash2 } from "lucide-react";
 function MainSettings() {
   return (
     <Card className="border-gray-200">

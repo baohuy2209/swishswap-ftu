@@ -5,7 +5,6 @@ import Footer from "@/components/layout/footer";
 import Header from "@/components/layout/header";
 import { ListingCatalog } from "@/components/sell/current-listing";
 export default async function Home() {
-  const { user } = await getCurrentSession();
   const { topListings } = await get3TopsListing();
   let safeListings;
   if (!topListings) {

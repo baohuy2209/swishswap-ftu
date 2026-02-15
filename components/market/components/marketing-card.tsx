@@ -1,5 +1,5 @@
 "use client";
-import { Heart } from "lucide-react";
+import { Heart, Star } from "lucide-react";
 import { ListingClient } from "@/components/sell/current-listing";
 export function formatNumberVN(value: number): string {
   return new Intl.NumberFormat("vi-VN").format(value);
@@ -18,12 +18,16 @@ export type AuthorListing = {
   author: string;
   avatar: string | Blob | undefined;
   university_name: string;
+  seller_id: string;
+  rating_count: number;
 };
 function MarketingCard({ listing }: MarketingCardProp) {
   const [seller, setSeller] = React.useState<AuthorListing>({
     author: "",
     avatar: "",
     university_name: "",
+    seller_id: "",
+    rating_count: 0,
   });
   const [category, setCategory] = React.useState<string | undefined>("");
   const [error, setError] = React.useState("");
@@ -43,7 +47,7 @@ function MarketingCard({ listing }: MarketingCardProp) {
 
   React.useEffect(() => {
     getSellerInfoByListingId(listing.id).then((res) => {
-      const { author, avatar, university_name } = res;
+      const { author, avatar, university_name, rating_count, seller_id } = res;
       if (res.error) {
         setError("Lỗi khi load data");
       }
@@ -53,6 +57,8 @@ function MarketingCard({ listing }: MarketingCardProp) {
           ? university_name
           : "Trường Đại học Kinh tế - Luật",
         avatar: avatar === null || avatar === undefined ? "/image.png" : avatar,
+        seller_id: seller_id!,
+        rating_count: rating_count!,
       });
     });
     getCategoryById(listing.id).then((res) => {
@@ -117,7 +123,7 @@ function MarketingCard({ listing }: MarketingCardProp) {
                 </span>
               </div>
             ) : (
-              <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-bounce">
+              <span className="bg-linear-to-r from-green-600 via-emerald-600 to-teal-700 text-white text-xs font-bold px-2 py-1 rounded-full animate-bounce">
                 Negotiable
               </span>
             )}
@@ -186,9 +192,19 @@ function MarketingCard({ listing }: MarketingCardProp) {
                     <AvatarFallback>{seller.author}</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col justify-center items-start">
-                    <span className="text-gradient font-bold text-lg">
-                      {seller.author}
-                    </span>
+                    <div className="flex flex-row gap-2 items-center justify-center">
+                      <Link
+                        href={`/vendor-profile/${seller.seller_id}`}
+                        className="text-gradient font-bold text-lg"
+                      >
+                        {seller.author}
+                      </Link>
+                      <p className="flex flex-row gap-0.5 items-center justify-center">
+                        <span>{seller.rating_count}</span>
+                        <Star className="fill-yellow-400 text-yellow-400" />
+                      </p>
+                    </div>
+
                     <small className="text-sm text-gray-600">
                       {seller.university_name}
                     </small>

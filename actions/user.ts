@@ -4,6 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { userProfileSchema } from "@/schemas";
 import z from "zod";
 import { getCurrentSession } from "./auth";
+import { toSafeUserWithExtras } from "@/lib/utils";
+import { getMainImageByListingId } from "./listings";
+
 export const getNameUserById = async (user_id: string | undefined) => {
   if (!user_id) {
     return "Không load được tên người dùng";
@@ -24,12 +27,58 @@ export const getUserById = async (user_id: string | undefined) => {
       id: user_id,
     },
   });
+  if (!user) {
+    return { safeUser: null };
+  }
   const safeUser = {
     ...user,
     password_hash: undefined,
   };
   return { safeUser };
 };
+
+export const getSellerById = async (user_id: string | undefined) => {
+  if (!user_id) {
+    return { user: null };
+  }
+  const user = await prisma.user.findUnique({
+    where: {
+      id: user_id,
+    },
+    include: {
+      listings: true,
+      received_reviews: true,
+    },
+  });
+  if (!user) return { user: null };
+  const safeListings = (
+    await Promise.all(
+      user.listings.map(async (item) => {
+        const { listingMedia } = await getMainImageByListingId(item.id);
+
+        if (!listingMedia) return null;
+
+        return {
+          ...item,
+          image_url: listingMedia.images_url,
+          price: item.price.toNumber(),
+          created_at: item.created_at.toISOString(),
+          updated_at: item.updated_at.toISOString(),
+          published_at: item.published_at?.toISOString() ?? null,
+          reserved_at: item.reserved_at?.toISOString() ?? null,
+          completed_at: item.completed_at?.toISOString() ?? null,
+        };
+      }),
+    )
+  ).filter(Boolean);
+  return {
+    user: toSafeUserWithExtras({
+      ...user,
+      listings: safeListings,
+    }),
+  };
+};
+
 export const uploadImageAvartar = async (file: File) => {
   const fileExt = file.name.split(".").pop();
   const filePath = `user-profile/${crypto.randomUUID()}.${fileExt}`;

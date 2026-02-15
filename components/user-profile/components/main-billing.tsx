@@ -1,3 +1,4 @@
+import { formatNumberVN } from "@/components/market/components/marketing-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -7,10 +8,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CreditCard, Download } from "lucide-react";
+import { Billing } from "@/lib/generated/prisma/client";
+import { formatDateVN } from "@/lib/utils";
+import { Download } from "lucide-react";
 import React from "react";
-
-function MainBilling() {
+export interface MainBillingProps {
+  safeListBilling: (Omit<Billing, "amount" | "created_at" | "paid_at"> & {
+    amount: number | undefined;
+    created_at: string | undefined;
+    paid_at: string | undefined;
+  })[];
+}
+function MainBilling({ safeListBilling }: MainBillingProps) {
   return (
     <Card className="border-gray-200">
       <CardHeader>
@@ -72,35 +81,28 @@ function MainBilling() {
         <div className="space-y-4">
           <h3 className="font-medium text-gray-900">Lịch sử thanh toán</h3>
           <div className="space-y-2">
-            <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-              <div>
-                <div className="font-medium">15/12/2024</div>
-                <div className="text-sm text-gray-600">
-                  Phí giao dịch – Đơn trao đổi thành công
+            {safeListBilling.map((item) => (
+              <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                <div>
+                  <div className="font-medium">
+                    {formatDateVN(item?.created_at!)}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {item.fee_type === "buy_sell"
+                      ? "Phí giao dịch - Đơn bán hàng thành công"
+                      : "Phí giao dịch – Đơn trao đổi thành công"}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">
+                    {formatNumberVN(item?.amount!)} VNĐ
+                  </span>
+                  <Button variant="ghost" size="sm">
+                    <Download className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="font-medium">29.000 VNĐ</span>
-                <Button variant="ghost" size="sm">
-                  <Download className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-              <div>
-                <div className="font-medium">15/11/2024</div>
-                <div className="text-sm text-gray-600">
-                  Phí giao dịch – Đơn trao đổi thành công
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="font-medium">29.000 VNĐ</span>
-                <Button variant="ghost" size="sm">
-                  <Download className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </CardContent>
