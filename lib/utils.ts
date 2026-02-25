@@ -36,7 +36,7 @@ export const serializeListing = (item: Listing): ListingClient => ({
   status: item.status,
   location: item.location,
   swap_enabled: item.swap_enabled,
-
+  search_text: item.search_text,
   view_count: item.view_count,
   favorite_count: item.favorite_count,
 
@@ -80,4 +80,12 @@ export function toSafeUserWithExtras(
     rating_count,
     review_count,
   };
+}
+export function removeVietnameseTones(str: string) {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toLowerCase();
 }

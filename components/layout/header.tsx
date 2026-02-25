@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Menu, X, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
 import Link from "next/link";
 
-import { User } from "@/lib/generated/prisma/client";
 import UserAction from "./user-action";
 import { useSession } from "@/providers/session-provider";
+import HeaderSearchBar from "./header-search-bar";
 const Header = () => {
   const user = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -59,12 +58,7 @@ const Header = () => {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center space-x-4 gap-4">
-              <Button
-                variant="outline"
-                className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                <Search className="h-5 w-5" />
-              </Button>
+              <HeaderSearchBar />
               {user ? (
                 <UserAction user={user} />
               ) : (

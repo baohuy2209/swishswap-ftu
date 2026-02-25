@@ -1,11 +1,14 @@
 "use server";
-import z, { array } from "zod";
+import z from "zod";
 import prisma from "@/lib/db/prisma";
-import { createClient } from "@/lib/supabase/server";
 import { createListingSchema } from "@/schemas";
 import { getCurrentSession } from "@/actions/auth";
 import { getCategoryByName } from "@/actions/category";
 import { getUniveryById } from "@/actions/university";
+import { Listing } from "@/lib/generated/prisma/client";
+import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/server";
+import { removeVietnameseTones } from "@/lib/utils";
 
 // Xử lí uplaod
 export const uploadImageProduct = async (file: File) => {
@@ -69,6 +72,7 @@ export const postProduct = async (
         price,
         location,
         swap_enabled: swap_enable,
+        search_text: removeVietnameseTones(title),
       },
     });
     image_360.forEach(async (image_file, index) => {
@@ -437,4 +441,20 @@ export async function getListingSameCategoryById(id: string) {
       listingsSameCategory: null,
     };
   }
+}
+export async function searchListing(searchQuery: string) {
+  if (!searchQuery.trim()) return [];
+
+  const { data, error } = await supabase
+    .from("listings")
+    .select("*")
+    .eq("status", "available")
+    .ilike("search_text", `%${searchQuery}%`);
+
+  if (error) {
+    console.error("Search products error:", error);
+    throw error;
+  }
+
+  return data as Listing[];
 }

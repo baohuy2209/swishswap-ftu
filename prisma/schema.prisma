@@ -122,6 +122,7 @@ model Listing {
   published_at DateTime?
   reserved_at  DateTime?
   completed_at DateTime?
+  search_text  String?
 
   // Relations
   seller        User             @relation(fields: [seller_id], references: [id])
