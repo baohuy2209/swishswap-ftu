@@ -38,7 +38,6 @@ const SearchListingPage = async ({ searchParams }: SearchPageProps) => {
       }),
     )
   ).filter((item): item is ListingCatalog => item !== null);
-  console.log(safeListings)
   return (
     <div className="w-full flex flex-col">
       <Header />
