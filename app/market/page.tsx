@@ -1,4 +1,4 @@
-import { getCurrentSession } from "@/actions/auth";
+export const dynamic = "force-dynamic";
 import {
   getListHasSameUniversity,
   getMainImageByListingId,
@@ -8,7 +8,6 @@ import Footer from "@/components/layout/footer";
 import Header from "@/components/layout/header";
 import MainMarket from "@/components/market/main-market";
 import { ListingCatalog } from "@/components/sell/current-listing";
-export const dynamic = "force-dynamic";
 
 async function MarketPlace() {
   const { userListings } = await getMarketList();
