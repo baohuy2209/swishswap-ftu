@@ -4,9 +4,7 @@ import { ListingCatalog } from "@/components/sell/current-listing";
 import { useSession } from "@/providers/session-provider";
 import { getUniveryById } from "@/actions/university";
 import { AuthorListing } from "@/components/market/components/marketing-card";
-import { getSellerInfoByListingId } from "@/actions/listings";
 import { getUserById } from "@/actions/user";
-import { User } from "@/lib/generated/prisma/client";
 import Link from "next/link";
 import { formatNumberVN } from "../sell/components/listing-card";
 export interface ListingFromSameUniProps {
@@ -32,7 +30,7 @@ export async function groupListingsBySeller(
     }
     map.get(listing.seller_id)!.push(listing);
   });
-  let listGroupListings = [];
+  const listGroupListings = [];
   for (const [key, value] of map) {
     const { safeUser } = await getUserById(key);
     const sellerInfo = {
@@ -40,6 +38,8 @@ export async function groupListingsBySeller(
       university_name:
         safeUser?.university_name ?? "Trường Đại học Kinh tế - Luật",
       avatar: safeUser?.avatar_url ?? "/image.png",
+      seller_id: safeUser?.id ?? "",
+      rating_count: safeUser?.rating_count ?? 0,
     };
     listGroupListings.push({
       seller: sellerInfo,
@@ -88,7 +88,7 @@ function ListingFromSameUni({ listingFromSameUni }: ListingFromSameUniProps) {
               className="bg-white rounded-xl p-6 shadow-sm border-2 border-transparent hover:border-green-500 hover:shadow-md transition-all duration-300"
             >
               <div className="flex items-center gap-4 pb-5 border-b-2 border-gray-100 mb-5">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
+                <div className="w-14 h-14 rounded-full bg-linear-to-br from-green-500 to-green-600 flex items-center justify-center text-white font-bold text-xl shrink-0">
                   us
                 </div>
                 <div className="flex-1">
@@ -105,9 +105,9 @@ function ListingFromSameUni({ listingFromSameUni }: ListingFromSameUniProps) {
                 {item.listings.map((listing) => (
                   <div
                     key={listing.id}
-                    className="min-w-[350px] max-w-[350px] border border-gray-200 rounded-lg p-4 bg-gray-50 hover:bg-white hover:border-green-500 hover:-translate-y-1 hover:shadow-md transition-all duration-200 flex gap-4"
+                    className="min-w-87.5 max-w-87.5 border border-gray-200 rounded-lg p-4 bg-gray-50 hover:bg-white hover:border-green-500 hover:-translate-y-1 hover:shadow-md transition-all duration-200 flex gap-4"
                   >
-                    <div className="w-24 h-24 min-w-[96px] rounded-md bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-5xl">
+                    <div className="w-24 h-24 min-w-24 rounded-md bg-linear-to-br from-green-500 to-green-600 flex items-center justify-center text-5xl">
                       📱
                     </div>
                     <div className="flex-1 flex flex-col gap-2">
