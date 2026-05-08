@@ -137,6 +137,7 @@ function MarketingCard({ listing }: MarketingCardProp) {
                 fill
                 className="object-cover p-2 rounded-md"
                 loading="lazy"
+                unoptimized
               />
             )}
           </div>
