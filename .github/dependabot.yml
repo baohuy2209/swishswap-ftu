@@ -1,0 +1,82 @@
+version: 2
+
+updates:
+  # =========================
+  # 🔹 Node.js (pnpm monorepo)
+  # =========================
+  - package-ecosystem: "npm"
+    directory: "/"
+
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "03:00"
+
+    open-pull-requests-limit: 8
+
+    # ✅ Gom nhóm PR (rất quan trọng)
+    groups:
+      next-core:
+        patterns:
+          - "next"
+          - "react"
+          - "react-dom"
+
+      ui-stack:
+        patterns:
+          - "tailwindcss"
+          - "postcss"
+          - "autoprefixer"
+          - "@radix-ui/*"
+          - "lucide-react"
+
+      tooling:
+        patterns:
+          - "eslint*"
+          - "prettier"
+          - "typescript"
+          - "@types/*"
+
+      dev-tools:
+        patterns:
+          - "turbo"
+          - "tsup"
+          - "vite"
+          - "webpack"
+
+    # ✅ Tránh breaking change nguy hiểm
+    ignore:
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+
+    # ✅ Commit rõ ràng
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+
+    # ✅ Label để quản lý PR
+    labels:
+      - "dependencies"
+      - "bot"
+
+    # ✅ Rebase tự động khi có conflict
+    rebase-strategy: "auto"
+
+  # =========================
+  # 🔹 GitHub Actions (CI/CD)
+  # =========================
+  - package-ecosystem: "github-actions"
+    directory: "/"
+
+    schedule:
+      interval: "weekly"
+
+    labels:
+      - "ci"
+      - "dependencies"

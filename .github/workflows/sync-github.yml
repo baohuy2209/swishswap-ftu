@@ -1,0 +1,17 @@
+# .github/workflows/sync.yml
+name: Sync GitHub Stats
+on:
+  schedule:
+    - cron: "0 0 * * *" # 00:00 UTC mỗi ngày
+  workflow_dispatch: # cho phép chạy thủ công
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call sync API
+        run: |
+            curl -X POST \
+                -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+                -H "Content-Type: application/json" \
+                https://your-domain.com/api/sync-github

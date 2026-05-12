@@ -1,0 +1,28 @@
+name: Backup Sanity
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Sanity CLI
+        run: npm install -g @sanity/cli
+
+      - name: Move to Sanity project
+        run: cd apps/client-stackra # 👈 sửa đúng path của bạn
+
+      - name: Export dataset
+        run: sanity dataset export production backup.tar.gz --project-id q8ukikzt --overwrite
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+      - name: Upload backup as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanity-backup-${{ github.run_number }}
+          path: apps/client-stackra/backup.tar.gz # ← path tính từ root repo
+          retention-days: 3
