@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
       - name: Install Sanity CLI
         run: npm install -g @sanity/cli
@@ -21,7 +21,7 @@ jobs:
         env:
           SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
       - name: Upload backup as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sanity-backup-${{ github.run_number }}
           path: apps/client-stackra/backup.tar.gz # ← path tính từ root repo
