@@ -12,7 +12,7 @@ jobs:
     steps:
       # 📥 Checkout code
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # 📦 Setup pnpm
       - name: Setup pnpm
